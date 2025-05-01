@@ -1,4 +1,13 @@
-import { Admin } from "../models/admin.model";
+import { Admin } from "../../src/models/admin.model.js";
+
+class ApiError extends Error {
+    constructor(statusCode, message) {
+        super(message);
+        this.statusCode = statusCode;
+        this.name = this.constructor.name;
+        Error.captureStackTrace(this, this.constructor);
+    }
+}
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {

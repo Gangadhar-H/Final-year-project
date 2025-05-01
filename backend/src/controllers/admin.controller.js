@@ -1,11 +1,42 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { Admin } from "../models/admin.model";
+import { Admin } from "../models/admin.model.js";
 import jwt from "jsonwebtoken";
 import generateAccessAndRefreshTokens from "../utils/generateTokens.js";
 import { Semester } from "../models/semester.model.js";
 import { Subject } from "../models/subject.model.js";
 import { Teacher } from "../models/teacher.model.js";
 import { Student } from "../models/student.model.js"
+
+
+const seedAdmin = asyncHandler(async (req, res) => {
+    const { adminId, name, email, password } = req.body;
+
+    // Check if admin already exists
+    const existingAdmin = await Admin.findOne({ email });
+    if (existingAdmin) {
+        return res.status(400).json({ message: "Admin already exists" });
+    }
+
+    // Create new admin
+    const admin = new Admin({
+        adminId,
+        name,
+        email,
+        password
+    });
+
+    await admin.save();
+
+    return res.status(201).json({
+        message: "Admin created successfully",
+        admin: {
+            _id: admin._id,
+            adminId: admin.adminId,
+            name: admin.name,
+            email: admin.email
+        }
+    });
+});
 
 const loginAdmin = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
@@ -18,7 +49,7 @@ const loginAdmin = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "Admin not found" });
     }
 
-    const isPasswordValid = await admin.isPasswordValid(password);
+    const isPasswordValid = await admin.isPasswordCorrect(password);
     if (!isPasswordValid) {
         return res.status(401).json({ message: "Incorrect password" });
     }
@@ -360,6 +391,7 @@ const deleteStudent = asyncHandler(async (req, res) => {
 });
 
 export {
+    seedAdmin,
     loginAdmin,
     addSemester,
     getAllSemesters,

@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import Admin from "../models/admin.model.js";
+import { Admin } from "../models/admin.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const verifyAdminJWT = asyncHandler(async (req, res, next) => {

@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { addDivision, addSemester, addStudent, addSubject, addTeacher, assignSubjectToTeacher, deleteSemester, deleteStudent, deleteSubject, deleteTeacher, getAllSemesters, getAllStudents, getAllTeachers, getStudentById, getSubjectsBySemester, getTeacherById, loginAdmin, removeDivision, updateSemester, updateStudent, updateSubject, updateTeacher } from "../controllers/admin.controller.js";
+import { addDivision, addSemester, addStudent, addSubject, addTeacher, assignSubjectToTeacher, deleteSemester, deleteStudent, deleteSubject, deleteTeacher, getAllSemesters, getAllStudents, getAllTeachers, getStudentById, getSubjectsBySemester, getTeacherById, loginAdmin, removeDivision, seedAdmin, updateSemester, updateStudent, updateSubject, updateTeacher } from "../controllers/admin.controller.js";
 
 import { verifyAdminJWT } from "../middlewares/adminAuth.js";
 
 const router = Router();
 
+router.route("/seed").post(seedAdmin);
 router.route("/login").post(loginAdmin);
 
 // Semester routes
