@@ -7,6 +7,8 @@ import StudentPage from './StudentPage';
 import TeacherAssignPage from './TeacherAssignPage';
 import ProfilePage from './ProfilePage';
 import Unauthorized from '../Unauthorized';
+import AddSemester from '../../components/semester/AddSemester';
+import SemesterDetail from '../../components/semester/SemesterDetail';
 
 export default function Index() {
     return (
@@ -14,6 +16,8 @@ export default function Index() {
             <Route path="/" element={<AdminLayout />}>
                 <Route index element={<DashboardHome />} />
                 <Route path="semesters/*" element={<SemesterPage />} />
+                <Route path="semesters/add" element={<AddSemester />} />
+                <Route path="semesters/:semesterId" element={<SemesterDetail />} />
                 <Route path="subjects/*" element={<SubjectPage />} />
                 <Route path="students/*" element={<StudentPage />} />
                 <Route path="teachers/*" element={<TeacherAssignPage />} />

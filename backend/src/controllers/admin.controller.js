@@ -75,14 +75,14 @@ const loginAdmin = asyncHandler(async (req, res) => {
 // ---------- Semester Management ----------
 
 const addSemester = asyncHandler(async (req, res) => {
-    const { semNumber, divisions } = req.body;
-    const existingSem = await Semester.findOne({ semNumber });
+    const { semesterNumber, divisions } = req.body;
+    const existingSem = await Semester.findOne({ semesterNumber });
     if (existingSem) {
         return res.status(400).json({ message: 'Semester already added' });
     }
 
     const newSemester = new Semester({
-        semNumber,
+        semesterNumber,
         divisions,
     });
 
