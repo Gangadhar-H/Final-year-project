@@ -33,7 +33,8 @@ const seedAdmin = asyncHandler(async (req, res) => {
             _id: admin._id,
             adminId: admin.adminId,
             name: admin.name,
-            email: admin.email
+            email: admin.email,
+            role: "admin"
         }
     });
 });
@@ -66,7 +67,7 @@ const loginAdmin = asyncHandler(async (req, res) => {
     return res.status(200)
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
-        .json({ message: "Logged In successful", admin: loggedInAdmin });
+        .json({ message: "Logged In successful", admin: loggedInAdmin, role: "admin" });
 
 });
 
