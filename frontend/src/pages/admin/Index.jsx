@@ -11,6 +11,8 @@ import AddSemester from '../../components/semester/AddSemester';
 import SemesterDetail from '../../components/semester/SemesterDetail';
 import AddSubject from '../../components/subject/AddSubject';
 import SubjectDetail from '../../components/subject/SubjectDetail';
+import AddStudent from '../../components/student/AddStudent';
+import StudentDetail from '../../components/student/StudentDetails';
 
 export default function Index() {
     return (
@@ -26,8 +28,11 @@ export default function Index() {
                 <Route path="subjects/add" element={<AddSubject />} />
                 <Route path="subjects/:subjectId" element={<SubjectDetail />} />
 
-
+                {/* Student Page */}
                 <Route path="students/*" element={<StudentPage />} />
+                <Route path="students/add" element={<AddStudent />} />
+                <Route path="students/:studentId" element={<StudentDetail />} />
+
                 <Route path="teachers/*" element={<TeacherAssignPage />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="unauthorized" element={<Unauthorized />} />
