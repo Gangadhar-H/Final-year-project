@@ -7,7 +7,7 @@ const TeacherAssignPage = () => {
     const [subjects, setSubjects] = useState([]);
     const [semesters, setSemesters] = useState([]);
     const [selectedSemester, setSelectedSemester] = useState('');
-    const [selectedTeacher, setSelectedTeacher] = useState(null);
+    const [selectedTeacher, setSelectedTeacher] = useState('');
     const [selectedSubject, setSelectedSubject] = useState('');
     const [selectedDivision, setSelectedDivision] = useState('');
     const [divisions, setDivisions] = useState([]);
@@ -109,12 +109,16 @@ const TeacherAssignPage = () => {
         setSelectedSubject(e.target.value);
     };
 
-    const handleTeacherSelection = (teacher) => {
-        setSelectedTeacher(teacher);
+    const handleTeacherChange = (e) => {
+        setSelectedTeacher(e.target.value);
     };
 
     const handleAddTeacher = () => {
         navigate('/admin/teachers/add');
+    };
+
+    const handleViewTeacherDetails = (teacherId) => {
+        navigate(`/admin/teachers/${teacherId}`);
     };
 
     const handleAssignSubject = async () => {
@@ -126,33 +130,10 @@ const TeacherAssignPage = () => {
         try {
             setLoading(true);
             await API.post(`/admin/subjects/${selectedSubject}/assign-teacher`, {
-                teacherId: selectedTeacher._id,
+                teacherId: selectedTeacher,
                 division: selectedDivision
             });
 
-            // Update the teacher's assigned subjects locally
-            const updatedTeachers = teachers.map(teacher => {
-                if (teacher._id === selectedTeacher._id) {
-                    // Check if the subject is already assigned to this division
-                    const alreadyAssigned = teacher.assignedSubjects.some(
-                        assignment => assignment.subjectId === selectedSubject &&
-                            assignment.division === selectedDivision
-                    );
-
-                    if (!alreadyAssigned) {
-                        return {
-                            ...teacher,
-                            assignedSubjects: [
-                                ...teacher.assignedSubjects,
-                                { subjectId: selectedSubject, division: selectedDivision }
-                            ]
-                        };
-                    }
-                }
-                return teacher;
-            });
-
-            setTeachers(updatedTeachers);
             setSuccess('Subject assigned successfully!');
 
             // Clear success message after 3 seconds
@@ -169,73 +150,9 @@ const TeacherAssignPage = () => {
         }
     };
 
-    const getTeacherSubjects = (teacher) => {
-        if (!teacher || !teacher.assignedSubjects || teacher.assignedSubjects.length === 0) {
-            return [];
-        }
-
-        return teacher.assignedSubjects.map(assignment => {
-            const subject = subjects.find(s => s._id === assignment.subjectId);
-            return {
-                ...assignment,
-                subjectName: subject ? subject.subjectName : 'Unknown Subject',
-                subjectCode: subject ? subject.subjectCode : 'N/A'
-            };
-        });
-    };
-
-    const handleRemoveAssignment = async (teacher, assignment) => {
-        // This would require a backend endpoint to remove an assignment
-        // For now, we'll just show an alert
-        alert('Remove assignment functionality would be implemented here.');
-
-        // Ideally, you would have an API call like:
-        // await API.delete(`/admin/teachers/${teacher._id}/assignments/${assignment.subjectId}`, { data: { division: assignment.division } });
-    };
-
-    const renderTeacherCard = (teacher) => {
-        const isSelected = selectedTeacher && selectedTeacher._id === teacher._id;
-        const assignedSubjects = getTeacherSubjects(teacher);
-
-        return (
-            <div
-                key={teacher._id}
-                className={`bg-white rounded-lg shadow hover:shadow-md transition border overflow-hidden mb-4
-                          ${isSelected ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200'}`}
-                onClick={() => handleTeacherSelection(teacher)}
-            >
-                <div className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2"></div>
-                <div className="p-4">
-                    <h3 className="text-lg font-bold">{teacher.name}</h3>
-                    <p className="text-gray-600">ID: {teacher.teacherId}</p>
-                    <p className="text-gray-600">Email: {teacher.email}</p>
-
-                    {assignedSubjects.length > 0 && (
-                        <div className="mt-3">
-                            <h4 className="font-medium text-sm text-gray-700 mb-1">Assigned Subjects:</h4>
-                            <ul className="text-sm">
-                                {assignedSubjects.map((assignment, idx) => (
-                                    <li key={idx} className="flex items-center justify-between bg-gray-50 p-2 rounded mb-1">
-                                        <span>
-                                            {assignment.subjectCode} - {assignment.subjectName} (Div: {assignment.division})
-                                        </span>
-                                        <button
-                                            className="text-red-500 hover:text-red-700 text-xs"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleRemoveAssignment(teacher, assignment);
-                                            }}
-                                        >
-                                            Remove
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
+    // Get the teacher object from the selected ID
+    const getSelectedTeacherObject = () => {
+        return teachers.find(teacher => teacher._id === selectedTeacher) || null;
     };
 
     return (
@@ -279,7 +196,7 @@ const TeacherAssignPage = () => {
             <div className="bg-white p-6 rounded shadow">
                 <h3 className="text-lg font-semibold mb-4">Assign Subject to Teacher</h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     {/* Semester Selector */}
                     <div>
                         <label htmlFor="semester-select" className="block text-sm font-medium text-gray-700 mb-1">
@@ -342,6 +259,26 @@ const TeacherAssignPage = () => {
                         </select>
                     </div>
 
+                    {/* Teacher Selector - New Dropdown */}
+                    <div>
+                        <label htmlFor="teacher-select" className="block text-sm font-medium text-gray-700 mb-1">
+                            Teacher
+                        </label>
+                        <select
+                            id="teacher-select"
+                            value={selectedTeacher}
+                            onChange={handleTeacherChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="">-- Select a teacher --</option>
+                            {teachers.map((teacher) => (
+                                <option key={teacher._id} value={teacher._id}>
+                                    {teacher.name} ({teacher.teacherId})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     {/* Assign Button */}
                     <div className="flex items-end">
                         <button
@@ -355,24 +292,55 @@ const TeacherAssignPage = () => {
                 </div>
 
                 {/* Selected Teacher Info */}
-                {selectedTeacher && (
+                {selectedTeacher && getSelectedTeacherObject() && (
                     <div className="mt-4 p-3 bg-blue-50 rounded border border-blue-200">
-                        <p className="font-medium">Selected Teacher: {selectedTeacher.name} ({selectedTeacher.teacherId})</p>
+                        <p className="font-medium">Selected Teacher: {getSelectedTeacherObject().name} ({getSelectedTeacherObject().teacherId})</p>
+                        <p className="text-sm text-gray-600">Email: {getSelectedTeacherObject().email}</p>
                     </div>
                 )}
             </div>
 
-            {/* Teachers List */}
+            {/* Teachers List - Simplified Table */}
             <div className="bg-white p-6 rounded shadow">
-                <h3 className="text-lg font-semibold mb-4">Teachers</h3>
+                <h3 className="text-lg font-semibold mb-4">Teachers List</h3>
 
                 {teachers.length === 0 ? (
                     <div className="text-center py-6 bg-gray-50 rounded">
                         <p className="text-gray-500">No teachers found. Add your first teacher!</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {teachers.map(renderTeacherCard)}
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full bg-white">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="py-2 px-4 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                    <th className="py-2 px-4 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th className="py-2 px-4 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th className="py-2 px-4 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned Subjects</th>
+                                    <th className="py-2 px-4 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                                {teachers.map((teacher) => (
+                                    <tr key={teacher._id} className="hover:bg-gray-50">
+                                        <td className="py-2 px-4 whitespace-nowrap">{teacher.teacherId}</td>
+                                        <td className="py-2 px-4 whitespace-nowrap">{teacher.name}</td>
+                                        <td className="py-2 px-4 whitespace-nowrap">{teacher.email}</td>
+                                        <td className="py-2 px-4 whitespace-nowrap">
+                                            {teacher.assignedSubjects?.length || 0} subjects
+                                        </td>
+                                        <td className="py-2 px-4 whitespace-nowrap">
+                                            <button
+                                                onClick={() => handleViewTeacherDetails(teacher._id)}
+                                                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                            >
+                                                View Details
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 )}
             </div>

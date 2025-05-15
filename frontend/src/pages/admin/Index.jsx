@@ -13,6 +13,7 @@ import AddSubject from '../../components/subject/AddSubject';
 import SubjectDetail from '../../components/subject/SubjectDetail';
 import AddStudent from '../../components/student/AddStudent';
 import StudentDetail from '../../components/student/StudentDetails';
+import AddTeacher from '../../components/teacher/AddTeacher';
 
 export default function Index() {
     return (
@@ -33,7 +34,10 @@ export default function Index() {
                 <Route path="students/add" element={<AddStudent />} />
                 <Route path="students/:studentId" element={<StudentDetail />} />
 
+                {/* Teacher Page */}
                 <Route path="teachers/*" element={<TeacherAssignPage />} />
+                <Route path="teachers/add" element={<AddTeacher />} />
+
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="unauthorized" element={<Unauthorized />} />
             </Route>
