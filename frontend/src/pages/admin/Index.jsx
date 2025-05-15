@@ -14,6 +14,7 @@ import SubjectDetail from '../../components/subject/SubjectDetail';
 import AddStudent from '../../components/student/AddStudent';
 import StudentDetail from '../../components/student/StudentDetails';
 import AddTeacher from '../../components/teacher/AddTeacher';
+import TeacherDetail from '../../components/teacher/TeacherDetail';
 
 export default function Index() {
     return (
@@ -37,6 +38,7 @@ export default function Index() {
                 {/* Teacher Page */}
                 <Route path="teachers/*" element={<TeacherAssignPage />} />
                 <Route path="teachers/add" element={<AddTeacher />} />
+                <Route path="teachers/:id" element={<TeacherDetail />} />
 
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="unauthorized" element={<Unauthorized />} />
