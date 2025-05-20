@@ -10,6 +10,7 @@ const TeacherDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [allSubjects, setAllSubjects] = useState([]);
 
     useEffect(() => {
         const fetchTeacherDetails = async () => {
@@ -19,9 +20,29 @@ const TeacherDetail = () => {
                 setTeacher(response.data.teacher);
                 setError(null);
 
-                // Fetch subject details for each assigned subject
+                // Fetch all semester information
+                const semestersResponse = await API.get('/admin/semesters/getAllSemesters');
+                const semesters = semestersResponse.data.semesters || [];
+
+                // Fetch subjects for all semesters
+                const subjectsPromises = semesters.map(semester =>
+                    API.get(`/admin/semesters/${semester.semesterNumber}/subjects`)
+                );
+
+                const subjectsResponses = await Promise.all(subjectsPromises);
+                let allSubjectsData = [];
+
+                subjectsResponses.forEach(response => {
+                    if (response.data.subjects) {
+                        allSubjectsData = [...allSubjectsData, ...response.data.subjects];
+                    }
+                });
+
+                setAllSubjects(allSubjectsData);
+
+                // Populate subject details if teacher has assigned subjects
                 if (response.data.teacher.assignedSubjects?.length > 0) {
-                    await fetchSubjectInformation(response.data.teacher.assignedSubjects);
+                    mapSubjectsToAssignments(response.data.teacher.assignedSubjects, allSubjectsData);
                 }
             } catch (err) {
                 setError('Failed to load teacher details');
@@ -34,32 +55,32 @@ const TeacherDetail = () => {
         fetchTeacherDetails();
     }, [id]);
 
-    const fetchSubjectInformation = async (assignedSubjects) => {
-        try {
-            const subjectsInfo = {};
+    // Map subjects to teacher assignments
+    const mapSubjectsToAssignments = (assignedSubjects, subjects) => {
+        const subjectsMap = {};
 
-            // Create array of promises for parallel requests
-            const promises = assignedSubjects.map(async (assignment) => {
-                try {
-                    // Get subject details by ID
-                    const response = await API.get(`/admin/subjects/${assignment.subjectId}`);
-                    subjectsInfo[assignment.subjectId] = response.data.subject;
-                } catch (err) {
-                    console.error(`Error fetching subject ${assignment.subjectId}:`, err);
-                    subjectsInfo[assignment.subjectId] = {
-                        subjectName: 'Unknown Subject',
-                        subjectCode: 'N/A'
-                    };
-                }
-            });
+        assignedSubjects.forEach(assignment => {
+            const subject = subjects.find(s => s._id === assignment.subjectId);
+            if (subject) {
+                subjectsMap[assignment.subjectId] = subject;
+            } else {
+                // Fallback if subject not found
+                subjectsMap[assignment.subjectId] = {
+                    subjectName: 'Unknown Subject',
+                    subjectCode: 'N/A'
+                };
+            }
+        });
 
-            // Wait for all requests to complete
-            await Promise.all(promises);
-            setSubjectDetails(subjectsInfo);
-        } catch (err) {
-            console.error('Error fetching subject details:', err);
-        }
+        setSubjectDetails(subjectsMap);
     };
+
+    // Update subject details when all subjects or teacher assignments change
+    useEffect(() => {
+        if (teacher?.assignedSubjects?.length > 0 && allSubjects.length > 0) {
+            mapSubjectsToAssignments(teacher.assignedSubjects, allSubjects);
+        }
+    }, [teacher?.assignedSubjects, allSubjects]);
 
     const handleEditTeacher = () => {
         navigate(`/admin/teachers/edit/${id}`);

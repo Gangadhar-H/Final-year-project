@@ -47,9 +47,9 @@ export default function AdminLayout() {
                 </main>
 
                 {/* Footer */}
-                <footer className="h-12 bg-white border-t flex items-center justify-center text-sm text-gray-500">
+                {/* <footer className="h-12 bg-white border-t flex items-center justify-center text-sm text-gray-500">
                     © 2025 eduVerse. All rights reserved.
-                </footer>
+                </footer> */}
             </div>
         </div>
     );
