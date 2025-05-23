@@ -55,7 +55,7 @@ const loginAdmin = asyncHandler(async (req, res) => {
         return res.status(401).json({ message: "Incorrect password" });
     }
 
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(admin._id);
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(admin._id, 'admin');
 
     const loggedInAdmin = await Admin.findById(admin._id).select("-password -refreshToken");
 

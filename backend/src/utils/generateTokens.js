@@ -1,4 +1,5 @@
-import { Admin } from "../../src/models/admin.model.js";
+import { Admin } from "../models/admin.model.js";
+import { Teacher } from "../models/teacher.model.js";
 
 class ApiError extends Error {
     constructor(statusCode, message) {
@@ -9,9 +10,23 @@ class ApiError extends Error {
     }
 }
 
-const generateAccessAndRefreshTokens = async (userId) => {
+const generateAccessAndRefreshTokens = async (userId, userType = 'admin') => {
     try {
-        const user = await Admin.findById(userId);
+        let user;
+
+        // Determine which model to use based on userType
+        if (userType === 'admin') {
+            user = await Admin.findById(userId);
+        } else if (userType === 'teacher') {
+            user = await Teacher.findById(userId);
+        } else {
+            throw new ApiError(400, "Invalid user type");
+        }
+
+        if (!user) {
+            throw new ApiError(404, `${userType} not found`);
+        }
+
         const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
 
@@ -20,6 +35,9 @@ const generateAccessAndRefreshTokens = async (userId) => {
 
         return { accessToken, refreshToken };
     } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
         throw new ApiError(500, "Something went wrong while generating refresh and access token");
     }
 }
