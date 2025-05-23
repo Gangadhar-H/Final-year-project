@@ -1,25 +1,37 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 const Login = () => {
-    const [email, setEmail] = useState('');    // changed field
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const { login } = useContext(AuthContext);
+    const { login, user } = useContext(AuthContext);
     const navigate = useNavigate();
+
+    // Redirect if user is already authenticated
+    useEffect(() => {
+        if (user && user.role) {
+            navigate(`/${user.role}/`, { replace: true });
+        }
+    }, [user, navigate]);
 
     const handleSubmit = async e => {
         e.preventDefault();
         try {
             setError('');
-            const role = await login({ email, password });  // pass email
+            const role = await login({ email, password });
             console.log(role);
             navigate(`/${role}/`);
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed');
         }
     };
+
+    // Don't render the form if user is already authenticated
+    if (user && user.role) {
+        return null; // or a loading spinner
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">

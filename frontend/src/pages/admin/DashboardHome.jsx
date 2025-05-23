@@ -54,7 +54,7 @@ const ActivityItem = ({ title, time, description, type }) => {
 
 // Dashboard Component
 export default function DashboardHome() {
-    const { auth } = useAuth();
+    const { user } = useAuth();
     const [stats, setStats] = useState({
         students: 0,
         teachers: 0,
@@ -156,6 +156,7 @@ export default function DashboardHome() {
         };
 
         fetchDashboardData();
+
     }, []);
 
     if (loading) {
@@ -190,7 +191,7 @@ export default function DashboardHome() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
-                <p className="text-gray-500">Welcome back, {auth?.name || 'Admin'}</p>
+                <p className="text-gray-500">Welcome back, {user?.name || 'Admin'}</p>
             </div>
 
             {/* Stats Overview */}

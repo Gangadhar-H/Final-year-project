@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const navItems = [
     { to: '/admin', label: 'Dashboard' },
@@ -10,6 +11,14 @@ const navItems = [
 ];
 
 export default function AdminLayout() {
+    const { logout, user } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
+
     return (
         <div className="flex h-screen bg-gray-100">
             {/* Sidebar */}
@@ -36,20 +45,21 @@ export default function AdminLayout() {
             <div className="flex-1 flex flex-col">
                 {/* Header */}
                 <header className="h-16 bg-white border-b flex items-center px-6 shadow-sm">
-                    <h1 className="text-xl font-semibold flex-1">Welcome, Admin</h1>
-                    {/* e.g. Logout Button */}
-                    <button className="text-red-500 hover:underline">Logout</button>
+                    <h1 className="text-xl font-semibold flex-1">
+                        Welcome, {user?.name || user?.email || 'Admin'}
+                    </h1>
+                    <button
+                        onClick={handleLogout}
+                        className="text-red-500 hover:underline cursor-pointer"
+                    >
+                        Logout
+                    </button>
                 </header>
 
                 {/* Content Area */}
                 <main className="flex-1 overflow-auto p-6">
                     <Outlet />
                 </main>
-
-                {/* Footer */}
-                {/* <footer className="h-12 bg-white border-t flex items-center justify-center text-sm text-gray-500">
-                    © 2025 eduVerse. All rights reserved.
-                </footer> */}
             </div>
         </div>
     );
