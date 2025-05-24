@@ -16,6 +16,7 @@ app.use(express.static("public"));
 
 // Routes
 import adminRouter from "./routes/admin.route.js";
+import teacherRouter from "./routes/teacher.route.js";
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
@@ -26,5 +27,12 @@ app.use((err, req, res, next) => {
 });
 
 app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/teacher", teacherRouter);
+app.get("/", (req, res) => {
+    res.status(200).json({
+        message: "Welcome to the School Management System API",
+        success: true
+    });
+});
 
 export default app;
