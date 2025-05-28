@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import TeacherHeader from '../../components/teacher/TeacherHeader';
 import TeacherSidebar from '../../components/teacher/TeacherSidebar';
 import Dashboard from './Dashboard';
-// import Profile from './Profile';
+import Profile from './Profile';
 // import Subjects from './Subjects';
 // import Attendance from './Attendance';
 // import AttendanceHistory from './AttendanceHistory';
@@ -52,7 +52,7 @@ export default function Index() {
                 <Route index element={<Dashboard />} />
 
                 {/* Profile Management */}
-                {/* <Route path="profile" element={<Profile />} /> */}
+                <Route path="profile" element={<Profile />} />
 
                 {/* Subject Management */}
                 {/* <Route path="subjects" element={<Subjects />} /> */}
