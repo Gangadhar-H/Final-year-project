@@ -1,11 +1,14 @@
 import { Router } from "express";
-import { 
+import {
     loginTeacher,
     getTeacherProfile,
     updateTeacherProfile,
     changePassword,
     getAssignedSubjects,
-    logoutTeacher
+    logoutTeacher,
+    getStudentsForAttendance,
+    getAttendance,
+    markAttendance
 } from "../controllers/teacher.controller.js";
 import { verifyTeacherJWT } from "../middlewares/teacherAuth.js";
 
@@ -20,5 +23,10 @@ router.route("/profile").put(verifyTeacherJWT, updateTeacherProfile);
 router.route("/change-password").post(verifyTeacherJWT, changePassword);
 router.route("/assigned-subjects").get(verifyTeacherJWT, getAssignedSubjects);
 router.route("/logout").post(verifyTeacherJWT, logoutTeacher);
+
+// Attendance routes
+router.route("/subjects/:subjectId/students").get(verifyTeacherJWT, getStudentsForAttendance);
+router.route("/subjects/:subjectId/attendance").get(verifyTeacherJWT, getAttendance);
+router.route("/subjects/:subjectId/attendance").post(verifyTeacherJWT, markAttendance);
 
 export default router;
