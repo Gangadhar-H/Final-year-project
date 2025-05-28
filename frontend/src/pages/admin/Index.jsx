@@ -21,24 +21,34 @@ export default function Index() {
         <Routes>
             <Route path="/" element={<AdminLayout />}>
                 <Route index element={<DashboardHome />} />
-                {/* Semester page */}
-                <Route path="semesters/*" element={<SemesterPage />} />
-                <Route path="semesters/add" element={<AddSemester />} />
-                <Route path="semesters/:semesterId" element={<SemesterDetail />} />
-                {/* Subject page */}
-                <Route path="subjects/*" element={<SubjectPage />} />
-                <Route path="subjects/add" element={<AddSubject />} />
-                <Route path="subjects/:subjectId" element={<SubjectDetail />} />
 
-                {/* Student Page */}
-                <Route path="students/*" element={<StudentPage />} />
-                <Route path="students/add" element={<AddStudent />} />
-                <Route path="students/:studentId" element={<StudentDetail />} />
+                {/* Semester Routes */}
+                <Route path="semesters">
+                    <Route index element={<SemesterPage />} />
+                    <Route path="add" element={<AddSemester />} />
+                    <Route path=":semesterId" element={<SemesterDetail />} />
+                </Route>
 
-                {/* Teacher Page */}
-                <Route path="teachers/*" element={<TeacherAssignPage />} />
-                <Route path="teachers/add" element={<AddTeacher />} />
-                <Route path="teachers/:id" element={<TeacherDetail />} />
+                {/* Subject Routes */}
+                <Route path="subjects">
+                    <Route index element={<SubjectPage />} />
+                    <Route path="add" element={<AddSubject />} />
+                    <Route path=":subjectId" element={<SubjectDetail />} />
+                </Route>
+
+                {/* Student Routes */}
+                <Route path="students">
+                    <Route index element={<StudentPage />} />
+                    <Route path="add" element={<AddStudent />} />
+                    <Route path=":studentId" element={<StudentDetail />} />
+                </Route>
+
+                {/* Teacher Routes */}
+                <Route path="teachers">
+                    <Route index element={<TeacherAssignPage />} />
+                    <Route path="add" element={<AddTeacher />} />
+                    <Route path=":id" element={<TeacherDetail />} />
+                </Route>
 
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="unauthorized" element={<Unauthorized />} />

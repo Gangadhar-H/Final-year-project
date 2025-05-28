@@ -2,7 +2,7 @@
 import API from '../api/axios.js';
 
 export const getSemesters = () =>
-    API.get('/admin/semesters').then(res => res.data);
+    API.get('/admin/semesters/getAllSemesters').then(res => res.data);
 
 export const addSemester = (semesterNumber, divisions = []) =>
     API.post('/admin/semesters', { semesterNumber, divisions })
@@ -15,3 +15,16 @@ export const updateSemester = (id, updates) =>
 export const deleteSemester = (id) =>
     API.delete(`/admin/semesters/${id}`)
         .then(res => res.data);
+
+// Additional service methods you might need
+export const getSemesterById = (id) =>
+    API.get(`/admin/semesters/${id}`).then(res => res.data);
+
+export const getStudents = () =>
+    API.get('/admin/students').then(res => res.data);
+
+export const getTeachers = () =>
+    API.get('/admin/teachers').then(res => res.data);
+
+export const getSubjects = (semesterNumber) =>
+    API.get(`/admin/semesters/${semesterNumber}/subjects`).then(res => res.data);

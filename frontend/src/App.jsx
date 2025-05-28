@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Index from './pages/admin/Index';
 import Unauthorized from './pages/Unauthorized';
+import TeacherIndex from './pages/teacher/Index';
 
 function App() {
   return (
@@ -21,7 +22,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* add other role routes here */}
+          <Route
+            path="/teacher/*"
+            element={
+              <ProtectedRoute allowedRoles={['teacher']}>
+                <TeacherIndex />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
