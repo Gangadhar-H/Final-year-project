@@ -55,10 +55,12 @@ const TeacherSidebar = () => {
     ];
 
     const isActiveRoute = (to) => {
+        // Exact match for dashboard
         if (to === '/teacher') {
             return location.pathname === '/teacher' || location.pathname === '/teacher/';
         }
-        return location.pathname.startsWith(to);
+        // Exact match for attendance and attendance-history
+        return location.pathname === to;
     };
 
     return (
@@ -109,15 +111,15 @@ const TeacherSidebar = () => {
                         className={({ isActive }) => {
                             const active = isActive || isActiveRoute(item.to);
                             return `flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${active
-                                    ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                                ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                                : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                                 }`;
                         }}
                         title={isCollapsed ? item.label : ''}
                     >
                         <div className={`flex-shrink-0 transition-colors duration-200 ${isActiveRoute(item.to)
-                                ? 'text-blue-700'
-                                : 'text-gray-400 group-hover:text-gray-600'
+                            ? 'text-blue-700'
+                            : 'text-gray-400 group-hover:text-gray-600'
                             }`}>
                             {item.icon}
                         </div>
@@ -141,7 +143,7 @@ const TeacherSidebar = () => {
                 {!isCollapsed ? (
                     <div className="text-center">
                         <p className="text-xs text-gray-500">
-                            School Management System
+                            eduVerse
                         </p>
                         <p className="text-xs text-gray-400 mt-1">
                             Teacher Dashboard

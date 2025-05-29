@@ -35,7 +35,7 @@ const Dashboard = () => {
 
             // Fetch assigned subjects
             const subjectsResponse = await getAssignedSubjects();
-            const subjects = subjectsResponse.subjects || [];
+            const subjects = subjectsResponse.assignedSubjects || [];
 
             // Fetch recent attendance for each subject (last 7 days)
             const today = new Date();
@@ -53,7 +53,8 @@ const Dashboard = () => {
                         endDate: today.toISOString().split('T')[0]
                     });
 
-                    if (attendanceResponse.success && attendanceResponse.attendance) {
+                    // Remove attendanceResponse.success check
+                    if (attendanceResponse.attendance) {
                         const formattedAttendance = formatAttendanceForDisplay(attendanceResponse.attendance);
 
                         // Add subject info to each attendance record

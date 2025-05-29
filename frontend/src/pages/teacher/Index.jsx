@@ -4,10 +4,10 @@ import TeacherHeader from '../../components/teacher/TeacherHeader';
 import TeacherSidebar from '../../components/teacher/TeacherSidebar';
 import Dashboard from './Dashboard';
 import Profile from './Profile';
-// import Subjects from './Subjects';
-// import Attendance from './Attendance';
-// import AttendanceHistory from './AttendanceHistory';
-// import MarkAttendance from './MarkAttendance';
+import Subjects from './Subjects';
+import Attendance from './Attendance';
+import AttendanceHistory from './AttendanceHistory';
+import MarkAttendance from './MarkAttendance';
 import Unauthorized from '../Unauthorized';
 
 const TeacherLayout = ({ children }) => {
@@ -55,12 +55,12 @@ export default function Index() {
                 <Route path="profile" element={<Profile />} />
 
                 {/* Subject Management */}
-                {/* <Route path="subjects" element={<Subjects />} /> */}
+                <Route path="subjects" element={<Subjects />} />
 
                 {/* Attendance Routes */}
-                {/* <Route path="attendance" element={<Attendance />} /> */}
-                {/* <Route path="attendance-history" element={<AttendanceHistory />} /> */}
-                {/* <Route path="mark-attendance/:subjectId" element={<MarkAttendance />} /> */}
+                <Route path="attendance" element={<Attendance />} />
+                <Route path="attendance-history" element={<AttendanceHistory />} />
+                <Route path="mark-attendance/:subjectId" element={<MarkAttendance />} />
 
                 {/* Catch-all for unauthorized access */}
                 <Route path="unauthorized" element={<Unauthorized />} />
