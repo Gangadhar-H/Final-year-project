@@ -8,14 +8,15 @@ import PDFParser from 'pdf2json';
 import mammoth from 'mammoth';
 import { createRequire } from 'module';
 import PDFDocument from 'pdfkit';
+import GEMINI_API_KEY from "../../api_key.js";
 
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || '');
+console.log("apiKey: ", genAI);
 // Helper function to extract text from PDF
 const extractTextFromPDF = (filePath) => {
     return new Promise((resolve, reject) => {
@@ -27,7 +28,10 @@ const extractTextFromPDF = (filePath) => {
 
         pdfParser.on("pdfParser_dataReady", pdfData => {
             let text = '';
-            pdfData.formImage.Pages.forEach(page => {
+            if (!pdfData.Pages || !Array.isArray(pdfData.Pages)) {
+                return reject(new Error("PDF data has no pages"));
+            }
+            pdfData.Pages.forEach(page => {
                 page.Texts.forEach(textItem => {
                     text += decodeURIComponent(textItem.R[0].T) + ' ';
                 });
@@ -109,6 +113,9 @@ const generateQuestionsWithGemini = async (content, questionConfig) => {
         - Questions should cover different topics from the content
         - Avoid repetitive questions
         - Make questions clear and specific
+        - Keep questions short and to the point
+        - Ensure questions are relevant to the content provided and give questions on important concepts
+        - Do not include any additional text or explanations, just the questions
         `;
 
         const result = await model.generateContent(prompt);
@@ -123,9 +130,7 @@ const generateQuestionsWithGemini = async (content, questionConfig) => {
 
 // Main controller function
 const generateQuestionPaper = asyncHandler(async (req, res) => {
-    console.log('=== Question Paper Generation Started ===');
-    console.log('Request body:', req.body);
-    console.log('File received:', req.file);
+
     try {
         const { twoMarks, fourMarks, eightMarks } = req.body;
 

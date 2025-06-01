@@ -26,3 +26,7 @@ coverage/
 # Build files
 dist/
 build/
+# Uploads folder
+uploads/
+# file for storing api key 
+api_key.js

@@ -133,7 +133,7 @@ const QuestionPaperGenerator = () => {
 
     const downloadPDF = async () => {
         try {
-            const response = await fetch('/api/v1/teacher/download/pdf', {
+            const response = await fetch('http://localhost:8000/api/v1/teacher/download/pdf', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
