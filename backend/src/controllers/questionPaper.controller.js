@@ -7,6 +7,7 @@ import { dirname } from 'path';
 import PDFParser from 'pdf2json';
 import mammoth from 'mammoth';
 import { createRequire } from 'module';
+import PDFDocument from 'pdfkit';
 
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
@@ -122,6 +123,9 @@ const generateQuestionsWithGemini = async (content, questionConfig) => {
 
 // Main controller function
 const generateQuestionPaper = asyncHandler(async (req, res) => {
+    console.log('=== Question Paper Generation Started ===');
+    console.log('Request body:', req.body);
+    console.log('File received:', req.file);
     try {
         const { twoMarks, fourMarks, eightMarks } = req.body;
 
@@ -183,8 +187,13 @@ const generateQuestionPaper = asyncHandler(async (req, res) => {
             });
         }
 
-        // Clean up uploaded file
-        fs.unlinkSync(filePath);
+        try {
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        } catch (cleanupError) {
+            console.error('File cleanup error:', cleanupError);
+        }
 
         if (!extractedText || extractedText.trim().length === 0) {
             return res.status(400).json({
@@ -251,21 +260,35 @@ const downloadQuestionPaperPDF = asyncHandler(async (req, res) => {
     const { questions, filename } = req.body;
 
     try {
-        // You'll need to implement PDF generation here
-        // Using libraries like jsPDF or puppeteer
+        const doc = new PDFDocument();
 
-        res.status(200).json({
-            message: "PDF generation functionality to be implemented",
-            success: true
-        });
+        // Set headers before piping
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename || 'question-paper'}.pdf"`);
+
+        // Pipe directly to response
+        doc.pipe(res);
+
+        // Add title
+        doc.fontSize(20).text('Question Paper', { align: 'center' });
+        doc.moveDown(2);
+
+        // Add content
+        doc.fontSize(12).text(questions || 'No content available', { align: 'left' });
+
+        // Important: End the document
+        doc.end();
+
     } catch (error) {
-        res.status(500).json({
-            message: "Failed to generate PDF",
-            success: false
-        });
+        console.error('PDF generation error:', error);
+        if (!res.headersSent) {
+            res.status(500).json({
+                message: "Failed to generate PDF",
+                success: false
+            });
+        }
     }
 });
-
 // Download generated question paper as DOCX
 const downloadQuestionPaperDOCX = asyncHandler(async (req, res) => {
     const { questions, filename } = req.body;

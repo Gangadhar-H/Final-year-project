@@ -17,23 +17,26 @@ app.use(express.static("public"));
 // Routes
 import adminRouter from "./routes/admin.route.js";
 import teacherRouter from "./routes/teacher.route.js";
-import questionPapaerRouter from "./routes/questionPaper.route.js"
+import questionPaperRouter from "./routes/questionPaper.route.js"
+
+
+app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/teacher", teacherRouter);
+app.use("/api/v1/teacher", questionPaperRouter);
+app.get("/", (req, res) => {
+    res.status(200).json({
+        message: "Welcome to the School Management System API",
+        success: true
+    });
+});
+
+
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(err.statusCode || 500).json({
         message: err.message || "Internal Server Error",
         success: false
-    });
-});
-
-app.use("/api/v1/admin", adminRouter);
-app.use("/api/v1/teacher", teacherRouter);
-app.use("/api/v1/teacher", questionPapaerRouter);
-app.get("/", (req, res) => {
-    res.status(200).json({
-        message: "Welcome to the School Management System API",
-        success: true
     });
 });
 

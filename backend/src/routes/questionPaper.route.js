@@ -12,7 +12,7 @@ const router = Router();
 // Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads/') // Make sure this directory exists
+        cb(null, './uploads/') // Add ./ to make it relative to backend root
     },
     filename: function (req, file, cb) {
         cb(null, Date.now() + '-' + file.originalname)
@@ -41,7 +41,7 @@ const upload = multer({
 });
 
 // Question paper generation routes
-router.route("/generate").post(
+router.route("/generate-question-paper").post(
     verifyTeacherJWT,
     upload.single('file'),
     generateQuestionPaper

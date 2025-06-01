@@ -89,38 +89,79 @@ const QuestionPaperGenerator = () => {
         setError('');
 
         try {
-            // Create FormData for file upload
             const formData = new FormData();
             formData.append('file', selectedFile);
             formData.append('twoMarks', questions.twoMarks);
             formData.append('fourMarks', questions.fourMarks);
             formData.append('eightMarks', questions.eightMarks);
 
-            // This would be your API call
-            const response = await fetch('/api/v1/teacher/generate-question-paper', {
+            const response = await fetch('http://localhost:8000/api/v1/teacher/generate-question-paper', {
                 method: 'POST',
                 body: formData,
                 credentials: 'include'
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            // Check if response has content
+            const responseText = await response.text();
+
+            if (!responseText) {
+                throw new Error('Empty response from server');
             }
 
-            const result = await response.json();
-            setGeneratedContent(result);
+            // Try to parse JSON
+            let result;
+            try {
+                result = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('Response text:', responseText);
+                throw new Error('Invalid response format from server');
+            }
+
+            if (!response.ok) {
+                throw new Error(result.message || 'Failed to generate question paper');
+            }
+
+            setGeneratedContent(result.data);
 
         } catch (err) {
-            setError('Failed to generate question paper. Please try again.');
+            setError(err.message || 'Failed to generate question paper. Please try again.');
             console.error('Generation error:', err);
         } finally {
             setIsGenerating(false);
         }
     };
 
-    const downloadPDF = () => {
-        // Implementation for PDF download
-        console.log('Downloading PDF...');
+    const downloadPDF = async () => {
+        try {
+            const response = await fetch('/api/v1/teacher/download/pdf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    questions: generatedContent.questions,
+                    filename: generatedContent.filename
+                })
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${generatedContent.filename}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } else {
+                setError('Failed to download PDF');
+            }
+        } catch (error) {
+            setError('Failed to download PDF');
+            console.error('Download error:', error);
+        }
     };
 
     const downloadDOCX = () => {
@@ -143,8 +184,8 @@ const QuestionPaperGenerator = () => {
 
                     <div
                         className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragActive
-                                ? 'border-blue-400 bg-blue-50'
-                                : 'border-gray-300 hover:border-gray-400'
+                            ? 'border-blue-400 bg-blue-50'
+                            : 'border-gray-300 hover:border-gray-400'
                             }`}
                         onDragEnter={handleDrag}
                         onDragLeave={handleDrag}
@@ -270,19 +311,22 @@ const QuestionPaperGenerator = () => {
                     </button>
                 </div>
 
-                {/* Generated Content */}
+                {/* Replace the existing Generated Content section with: */}
                 {generatedContent && (
                     <div className="border-t pt-6">
                         <h3 className="text-lg font-semibold text-gray-800 mb-4">Generated Question Paper</h3>
 
-                        <div className="bg-gray-50 rounded-md p-6 mb-4">
-                            <h4 className="font-medium mb-3">Preview:</h4>
-                            <div className="text-sm text-gray-700 space-y-2">
-                                <p>✓ Generated {questions.twoMarks} two-mark questions</p>
-                                <p>✓ Generated {questions.fourMarks} four-mark questions</p>
-                                <p>✓ Generated {questions.eightMarks} eight-mark questions</p>
-                                <p className="font-medium">Total: {totalMarks} marks</p>
-                            </div>
+                        <div className="bg-white border rounded-md p-6 mb-4 max-h-96 overflow-y-auto">
+                            <pre className="whitespace-pre-wrap text-sm text-gray-700">
+                                {generatedContent.questions}
+                            </pre>
+                        </div>
+
+                        <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+                            <p className="text-sm text-blue-800">
+                                <strong>Total Questions:</strong> {generatedContent.questionConfig.twoMarks + generatedContent.questionConfig.fourMarks + generatedContent.questionConfig.eightMarks} |
+                                <strong> Total Marks:</strong> {generatedContent.totalMarks}
+                            </p>
                         </div>
 
                         <div className="flex gap-4">
@@ -292,14 +336,6 @@ const QuestionPaperGenerator = () => {
                             >
                                 <Download className="h-4 w-4 mr-2" />
                                 Download PDF
-                            </button>
-
-                            <button
-                                onClick={downloadDOCX}
-                                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                            >
-                                <Download className="h-4 w-4 mr-2" />
-                                Download DOCX
                             </button>
                         </div>
                     </div>
