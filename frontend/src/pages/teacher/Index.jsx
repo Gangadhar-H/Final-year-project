@@ -9,6 +9,7 @@ import Attendance from './Attendance';
 import AttendanceHistory from './AttendanceHistory';
 import MarkAttendance from './MarkAttendance';
 import Unauthorized from '../Unauthorized';
+import QuestionPaperGenerator from './QuestionPaperGenerator';
 
 const TeacherLayout = ({ children }) => {
     const { user } = useAuth();
@@ -61,6 +62,8 @@ export default function Index() {
                 <Route path="attendance" element={<Attendance />} />
                 <Route path="attendance-history" element={<AttendanceHistory />} />
                 <Route path="mark-attendance/:subjectId" element={<MarkAttendance />} />
+
+                <Route path="question-paper-generator" element={<QuestionPaperGenerator />} />
 
                 {/* Catch-all for unauthorized access */}
                 <Route path="unauthorized" element={<Unauthorized />} />
