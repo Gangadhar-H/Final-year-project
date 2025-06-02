@@ -16,7 +16,6 @@ const __dirname = dirname(__filename);
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || '');
-console.log("apiKey: ", genAI);
 // Helper function to extract text from PDF
 const extractTextFromPDF = (filePath) => {
     return new Promise((resolve, reject) => {
@@ -107,9 +106,9 @@ const generateQuestionsWithGemini = async (content, questionConfig) => {
         ...
 
         Guidelines:
-        - Two-mark questions should be short, factual, or definition-based
-        - Four-mark questions should require brief explanations or comparisons
-        - Eight-mark questions should require detailed explanations, analysis, or problem-solving
+        - Two-mark questions should be short, factual, or definition-based(keep definition based questions more if possible)
+        - Four-mark questions should require brief explanations or comparisons or problems(if there are any sums)
+        - Eight-mark questions should require detailed explanations, analysis, or problem-solving or problems(if there are any sums which can be asked for 8 marks)
         - Questions should cover different topics from the content
         - Avoid repetitive questions
         - Make questions clear and specific

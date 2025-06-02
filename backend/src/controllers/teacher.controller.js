@@ -4,6 +4,7 @@ import generateAccessAndRefreshTokens from "../utils/generateTokens.js";
 import { Subject } from "../models/subject.model.js";
 import { Attendance } from "../models/attendance.model.js";
 import { Student } from "../models/student.model.js";
+import { InternalMark } from "../models/internalMark.model.js";
 
 // Teacher Login
 const loginTeacher = asyncHandler(async (req, res) => {
@@ -319,6 +320,310 @@ const getStudentsForAttendance = asyncHandler(async (req, res) => {
     });
 });
 
+// Add Internal Marks for Students
+const addInternalMarks = asyncHandler(async (req, res) => {
+    const { subjectId } = req.params;
+    const { division, examType, maxMarks, examDate, marksData, remarks } = req.body;
+
+    // Validate required fields
+    if (!division || !examType || !maxMarks || !examDate || !Array.isArray(marksData)) {
+        return res.status(400).json({
+            message: "Division, exam type, max marks, exam date, and marks data are required"
+        });
+    }
+
+    // Check if teacher is assigned to this subject and division
+    const teacher = await Teacher.findById(req.user._id);
+    const isAssigned = teacher.assignedSubjects.some(
+        assignment => assignment.subjectId.toString() === subjectId &&
+            assignment.division === division
+    );
+
+    if (!isAssigned) {
+        return res.status(403).json({
+            message: "You are not assigned to teach this subject in this division"
+        });
+    }
+
+    // Get subject details to find semester
+    const subject = await Subject.findById(subjectId).populate('semester');
+    if (!subject) {
+        return res.status(404).json({ message: "Subject not found" });
+    }
+
+    try {
+        const savedMarks = [];
+        const errors = [];
+
+        // Process each student's marks
+        for (const markData of marksData) {
+            const { studentId, obtainedMarks } = markData;
+
+            if (!studentId || obtainedMarks === undefined) {
+                errors.push(`Missing data for student ${studentId}`);
+                continue;
+            }
+
+            if (obtainedMarks > maxMarks || obtainedMarks < 0) {
+                errors.push(`Invalid marks for student ${studentId}: ${obtainedMarks}`);
+                continue;
+            }
+
+            try {
+                // Check if marks already exist for this student-subject-examType combination
+                let existingMark = await InternalMark.findOne({
+                    student: studentId,
+                    subject: subjectId,
+                    examType: examType
+                });
+
+                if (existingMark) {
+                    // Update existing marks
+                    existingMark.obtainedMarks = obtainedMarks;
+                    existingMark.maxMarks = maxMarks;
+                    existingMark.examDate = new Date(examDate);
+                    existingMark.remarks = remarks || '';
+                    existingMark.teacher = req.user._id;
+                    await existingMark.save();
+                    savedMarks.push(existingMark);
+                } else {
+                    // Create new marks entry
+                    const newMark = new InternalMark({
+                        student: studentId,
+                        subject: subjectId,
+                        teacher: req.user._id,
+                        division: division,
+                        semester: subject.semester._id,
+                        examType: examType,
+                        maxMarks: maxMarks,
+                        obtainedMarks: obtainedMarks,
+                        examDate: new Date(examDate),
+                        remarks: remarks || ''
+                    });
+
+                    await newMark.save();
+                    savedMarks.push(newMark);
+                }
+            } catch (error) {
+                errors.push(`Error saving marks for student ${studentId}: ${error.message}`);
+            }
+        }
+
+        // Get populated marks for response
+        const populatedMarks = await InternalMark.find({
+            _id: { $in: savedMarks.map(mark => mark._id) }
+        })
+            .populate('student', 'name uucmsNo')
+            .populate('subject', 'subjectName subjectCode')
+            .populate('teacher', 'name teacherId');
+
+        return res.status(200).json({
+            message: "Internal marks processed successfully",
+            savedMarks: populatedMarks,
+            savedCount: savedMarks.length,
+            errors: errors.length > 0 ? errors : undefined
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            message: "Error processing internal marks",
+            error: error.message
+        });
+    }
+});
+
+// Get Internal Marks for a Subject
+const getInternalMarks = asyncHandler(async (req, res) => {
+    const { subjectId } = req.params;
+    const { division, examType, studentId } = req.query;
+
+    // Check if teacher is assigned to this subject
+    const teacher = await Teacher.findById(req.user._id);
+    const isAssigned = teacher.assignedSubjects.some(
+        assignment => assignment.subjectId.toString() === subjectId
+    );
+
+    if (!isAssigned) {
+        return res.status(403).json({
+            message: "You are not assigned to teach this subject"
+        });
+    }
+
+    // Build query
+    let query = { subject: subjectId };
+
+    if (division) query.division = division;
+    if (examType) query.examType = examType;
+    if (studentId) query.student = studentId;
+
+    const marks = await InternalMark.find(query)
+        .populate('student', 'name uucmsNo email')
+        .populate('subject', 'subjectName subjectCode')
+        .populate('teacher', 'name teacherId')
+        .populate('semester', 'semesterNumber')
+        .sort({ examDate: -1, 'student.name': 1 });
+
+    // Calculate statistics if division and examType are provided
+    let statistics = null;
+    if (division && examType) {
+        statistics = await InternalMark.getClassAverage(subjectId, division, examType);
+    }
+
+    return res.status(200).json({
+        message: "Internal marks retrieved successfully",
+        marks,
+        count: marks.length,
+        statistics
+    });
+});
+
+// Update Internal Marks
+const updateInternalMarks = asyncHandler(async (req, res) => {
+    const { markId } = req.params;
+    const { obtainedMarks, maxMarks, examDate, remarks } = req.body;
+
+    // Find the mark record
+    const mark = await InternalMark.findById(markId)
+        .populate('subject', 'subjectName');
+
+    if (!mark) {
+        return res.status(404).json({ message: "Internal mark record not found" });
+    }
+
+    // Check if teacher is assigned to this subject and division
+    const teacher = await Teacher.findById(req.user._id);
+    const isAssigned = teacher.assignedSubjects.some(
+        assignment => assignment.subjectId.toString() === mark.subject._id.toString() &&
+            assignment.division === mark.division
+    );
+
+    if (!isAssigned) {
+        return res.status(403).json({
+            message: "You are not authorized to update marks for this subject"
+        });
+    }
+
+    // Validate marks if provided
+    if (obtainedMarks !== undefined) {
+        const maxMarksToCheck = maxMarks || mark.maxMarks;
+        if (obtainedMarks > maxMarksToCheck || obtainedMarks < 0) {
+            return res.status(400).json({
+                message: "Invalid marks: Obtained marks should be between 0 and maximum marks"
+            });
+        }
+        mark.obtainedMarks = obtainedMarks;
+    }
+
+    // Update other fields if provided
+    if (maxMarks !== undefined) mark.maxMarks = maxMarks;
+    if (examDate) mark.examDate = new Date(examDate);
+    if (remarks !== undefined) mark.remarks = remarks;
+
+    await mark.save();
+
+    // Return populated mark
+    const updatedMark = await InternalMark.findById(markId)
+        .populate('student', 'name uucmsNo')
+        .populate('subject', 'subjectName subjectCode')
+        .populate('teacher', 'name teacherId');
+
+    return res.status(200).json({
+        message: "Internal marks updated successfully",
+        mark: updatedMark
+    });
+});
+
+// Delete Internal Marks
+const deleteInternalMarks = asyncHandler(async (req, res) => {
+    const { markId } = req.params;
+
+    // Find the mark record
+    const mark = await InternalMark.findById(markId);
+
+    if (!mark) {
+        return res.status(404).json({ message: "Internal mark record not found" });
+    }
+
+    // Check if teacher is assigned to this subject and division
+    const teacher = await Teacher.findById(req.user._id);
+    const isAssigned = teacher.assignedSubjects.some(
+        assignment => assignment.subjectId.toString() === mark.subject.toString() &&
+            assignment.division === mark.division
+    );
+
+    if (!isAssigned) {
+        return res.status(403).json({
+            message: "You are not authorized to delete marks for this subject"
+        });
+    }
+
+    await InternalMark.findByIdAndDelete(markId);
+
+    return res.status(200).json({
+        message: "Internal mark deleted successfully"
+    });
+});
+
+// Get Student Performance Summary
+const getStudentPerformanceSummary = asyncHandler(async (req, res) => {
+    const { subjectId } = req.params;
+    const { division, studentId } = req.query;
+
+    if (!studentId) {
+        return res.status(400).json({ message: "Student ID is required" });
+    }
+
+    // Check if teacher is assigned to this subject
+    const teacher = await Teacher.findById(req.user._id);
+    const isAssigned = teacher.assignedSubjects.some(
+        assignment => assignment.subjectId.toString() === subjectId
+    );
+
+    if (!isAssigned) {
+        return res.status(403).json({
+            message: "You are not assigned to teach this subject"
+        });
+    }
+
+    // Get all marks for the student in this subject
+    const marks = await InternalMark.find({
+        student: studentId,
+        subject: subjectId,
+        ...(division && { division })
+    })
+        .populate('student', 'name uucmsNo')
+        .populate('subject', 'subjectName subjectCode')
+        .sort({ examDate: 1 });
+
+    if (marks.length === 0) {
+        return res.status(200).json({
+            message: "No marks found for this student",
+            marks: [],
+            summary: null
+        });
+    }
+
+    // Calculate summary statistics
+    const totalMarks = marks.reduce((sum, mark) => sum + mark.obtainedMarks, 0);
+    const totalMaxMarks = marks.reduce((sum, mark) => sum + mark.maxMarks, 0);
+    const averagePercentage = totalMaxMarks > 0 ? ((totalMarks / totalMaxMarks) * 100).toFixed(2) : 0;
+
+    const summary = {
+        totalExams: marks.length,
+        totalObtainedMarks: totalMarks,
+        totalMaxMarks: totalMaxMarks,
+        averagePercentage: parseFloat(averagePercentage),
+        student: marks[0].student,
+        subject: marks[0].subject
+    };
+
+    return res.status(200).json({
+        message: "Student performance summary retrieved successfully",
+        marks,
+        summary
+    });
+});
+
 export {
     loginTeacher,
     getTeacherProfile,
@@ -328,5 +633,10 @@ export {
     logoutTeacher,
     markAttendance,
     getAttendance,
-    getStudentsForAttendance
+    getStudentsForAttendance,
+    addInternalMarks,
+    getInternalMarks,
+    updateInternalMarks,
+    deleteInternalMarks,
+    getStudentPerformanceSummary,
 }

@@ -3,8 +3,6 @@ import { Teacher } from "../models/teacher.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const verifyTeacherJWT = asyncHandler(async (req, res, next) => {
-    // In your verifyTeacherJWT middleware, add:
-    console.log('Teacher auth middleware hit');
     try {
         const token =
             req.cookies?.accessToken ||
