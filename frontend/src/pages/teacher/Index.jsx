@@ -10,6 +10,7 @@ import AttendanceHistory from './AttendanceHistory';
 import MarkAttendance from './MarkAttendance';
 import Unauthorized from '../Unauthorized';
 import QuestionPaperGenerator from './QuestionPaperGenerator';
+import InternalMarks from './InternalMarks';
 
 const TeacherLayout = ({ children }) => {
     const { user } = useAuth();
@@ -62,6 +63,11 @@ export default function Index() {
                 <Route path="attendance" element={<Attendance />} />
                 <Route path="attendance-history" element={<AttendanceHistory />} />
                 <Route path="mark-attendance/:subjectId" element={<MarkAttendance />} />
+
+                {/* Internal Marks Routes */}
+                <Route path="internal-marks" element={<InternalMarks />} />
+                {/* <Route path="add-internal-marks/:subjectId" element={<AddInternalMarks />} /> */}
+                {/* <Route path="student-performance" element={<StudentPerformance />} /> */}
 
                 <Route path="question-paper-generator" element={<QuestionPaperGenerator />} />
 
