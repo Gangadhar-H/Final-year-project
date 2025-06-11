@@ -88,7 +88,14 @@ const generateQuestionsWithGemini = async (content, questionConfig) => {
         Content:
         ${content}
 
+        Very Important: Please ensure that the questions should be random and different from previously generated questions. Do not repeat any questions from previous requests.
+
         Please format the output as follows:
+
+        KLE's College Of BCA RLSI, Belagavi
+        Question Bank
+        Subject: [Subject Name]
+        
         
         ## TWO MARKS QUESTIONS (2 marks each)
         1. [Question]
@@ -113,7 +120,7 @@ const generateQuestionsWithGemini = async (content, questionConfig) => {
         - Avoid repetitive questions
         - Make questions clear and specific
         - Keep questions short and to the point
-        - Ensure questions are relevant to the content provided and give questions on important concepts
+        - Ensure questions are relevant to the content provided 
         - Do not include any additional text or explanations, just the questions
         `;
 
