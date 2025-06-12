@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getAssignedSubjects } from '../../services/teacherService';
 import { getStudentPerformanceSummary, getInternalMarks } from '../../services/internalMarksService';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 export default function StudentPerformance() {
     const navigate = useNavigate();
@@ -14,6 +15,7 @@ export default function StudentPerformance() {
     const [loading, setLoading] = useState(false);
     const [studentsLoading, setStudentsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [chartType, setChartType] = useState('line');
 
     useEffect(() => {
         fetchAssignedSubjects();
@@ -142,6 +144,36 @@ export default function StudentPerformance() {
         } else {
             return { trend: 'declining', difference: Math.abs(difference).toFixed(2), color: 'text-red-600' };
         }
+    };
+
+    const prepareChartData = (marks) => {
+        return marks
+            .sort((a, b) => new Date(a.examDate) - new Date(b.examDate))
+            .map((mark, index) => ({
+                examNumber: index + 1,
+                examType: mark.examType,
+                date: formatDate(mark.examDate),
+                percentage: parseFloat(calculatePercentage(mark.obtainedMarks, mark.maxMarks)),
+                obtainedMarks: mark.obtainedMarks,
+                maxMarks: mark.maxMarks,
+                fullDate: mark.examDate
+            }));
+    };
+
+    // Custom tooltip for the chart
+    const CustomTooltip = ({ active, payload, label }) => {
+        if (active && payload && payload.length) {
+            const data = payload[0].payload;
+            return (
+                <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+                    <p className="font-semibold text-gray-900">{`Exam ${label}: ${data.examType}`}</p>
+                    <p className="text-sm text-gray-600">{`Date: ${data.date}`}</p>
+                    <p className="text-blue-600">{`Percentage: ${data.percentage}%`}</p>
+                    <p className="text-green-600">{`Marks: ${data.obtainedMarks}/${data.maxMarks}`}</p>
+                </div>
+            );
+        }
+        return null;
     };
 
     return (
@@ -380,23 +412,174 @@ export default function StudentPerformance() {
                         </div>
                     </div>
 
-                    {/* Performance Chart Placeholder */}
+                    {/* Performance Chart */}
                     <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Trend</h3>
-                        <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-                            <div className="text-center">
-                                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                </svg>
-                                <p className="text-gray-500">Performance chart visualization coming soon</p>
-                                <p className="text-sm text-gray-400 mt-1">
-                                    Current trend: {(() => {
-                                        const trend = getPerformanceTrend(performanceData.marks);
-                                        return trend ? trend.trend : 'insufficient data';
-                                    })()}
-                                </p>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold text-gray-900">Performance Trend</h3>
+                            <div className="flex space-x-2">
+                                <button
+                                    onClick={() => setChartType('line')}
+                                    className={`px-3 py-1 text-sm rounded-md ${chartType === 'line'
+                                        ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        }`}
+                                >
+                                    Line Chart
+                                </button>
+                                <button
+                                    onClick={() => setChartType('bar')}
+                                    className={`px-3 py-1 text-sm rounded-md ${chartType === 'bar'
+                                        ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        }`}
+                                >
+                                    Bar Chart
+                                </button>
                             </div>
                         </div>
+
+                        {performanceData.marks.length > 0 ? (
+                            <div className="h-80">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    {chartType === 'line' ? (
+                                        <LineChart data={prepareChartData(performanceData.marks)}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                                            <XAxis
+                                                dataKey="examNumber"
+                                                stroke="#6b7280"
+                                                fontSize={12}
+                                                tickFormatter={(value) => `Exam ${value}`}
+                                            />
+                                            <YAxis
+                                                stroke="#6b7280"
+                                                fontSize={12}
+                                                domain={[0, 100]}
+                                                tickFormatter={(value) => `${value}%`}
+                                            />
+                                            <Tooltip content={<CustomTooltip />} />
+                                            <Legend />
+                                            <Line
+                                                type="monotone"
+                                                dataKey="percentage"
+                                                stroke="#3b82f6"
+                                                strokeWidth={3}
+                                                dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }}
+                                                activeDot={{ r: 8, fill: '#1d4ed8' }}
+                                                name="Percentage (%)"
+                                            />
+                                            {/* Reference lines for grades */}
+                                            <Line
+                                                type="monotone"
+                                                dataKey={() => 90}
+                                                stroke="#10b981"
+                                                strokeDasharray="5 5"
+                                                strokeWidth={1}
+                                                dot={false}
+                                                name="A+ Grade (90%)"
+                                            />
+                                            <Line
+                                                type="monotone"
+                                                dataKey={() => 80}
+                                                stroke="#f59e0b"
+                                                strokeDasharray="5 5"
+                                                strokeWidth={1}
+                                                dot={false}
+                                                name="A Grade (80%)"
+                                            />
+                                            <Line
+                                                type="monotone"
+                                                dataKey={() => 60}
+                                                stroke="#ef4444"
+                                                strokeDasharray="5 5"
+                                                strokeWidth={1}
+                                                dot={false}
+                                                name="B Grade (60%)"
+                                            />
+                                        </LineChart>
+                                    ) : (
+                                        <BarChart data={prepareChartData(performanceData.marks)}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                                            <XAxis
+                                                dataKey="examNumber"
+                                                stroke="#6b7280"
+                                                fontSize={12}
+                                                tickFormatter={(value) => `Exam ${value}`}
+                                            />
+                                            <YAxis
+                                                stroke="#6b7280"
+                                                fontSize={12}
+                                                domain={[0, 100]}
+                                                tickFormatter={(value) => `${value}%`}
+                                            />
+                                            <Tooltip content={<CustomTooltip />} />
+                                            <Legend />
+                                            <Bar
+                                                dataKey="percentage"
+                                                name="Percentage (%)"
+                                                radius={[4, 4, 0, 0]}
+                                            >
+                                                {prepareChartData(performanceData.marks).map((entry, index) => (
+                                                    <Bar
+                                                        key={`cell-${index}`}
+                                                        fill={
+                                                            entry.percentage >= 90 ? '#10b981' :
+                                                                entry.percentage >= 80 ? '#3b82f6' :
+                                                                    entry.percentage >= 70 ? '#8b5cf6' :
+                                                                        entry.percentage >= 60 ? '#f59e0b' :
+                                                                            entry.percentage >= 50 ? '#f97316' :
+                                                                                entry.percentage >= 40 ? '#ef4444' :
+                                                                                    '#dc2626'
+                                                        }
+                                                    />
+                                                ))}
+                                            </Bar>
+                                        </BarChart>
+                                    )}
+                                </ResponsiveContainer>
+                            </div>
+                        ) : (
+                            <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                                <div className="text-center">
+                                    <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                    </svg>
+                                    <p className="text-gray-500">No exam data available to display chart</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Chart Legend */}
+                        {performanceData.marks.length > 0 && (
+                            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                                <h4 className="text-sm font-medium text-gray-700 mb-2">Grade Reference:</h4>
+                                <div className="flex flex-wrap gap-4 text-xs">
+                                    <div className="flex items-center">
+                                        <div className="w-3 h-3 bg-green-500 rounded mr-2"></div>
+                                        <span>A+ (90%+)</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <div className="w-3 h-3 bg-blue-500 rounded mr-2"></div>
+                                        <span>A (80-89%)</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <div className="w-3 h-3 bg-purple-500 rounded mr-2"></div>
+                                        <span>B+ (70-79%)</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <div className="w-3 h-3 bg-yellow-500 rounded mr-2"></div>
+                                        <span>B (60-69%)</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <div className="w-3 h-3 bg-orange-500 rounded mr-2"></div>
+                                        <span>C (50-59%)</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <div className="w-3 h-3 bg-red-500 rounded mr-2"></div>
+                                        <span>D/F (Below 50%)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
