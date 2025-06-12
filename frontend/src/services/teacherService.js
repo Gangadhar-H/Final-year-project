@@ -148,6 +148,12 @@ export const formatAttendanceForDisplay = (attendanceRecords) => {
     }));
 };
 
+// Marks Services
+export const getStudentsForMarks = (subjectId, division) =>
+    API.get(`/teacher/subjects/${subjectId}/students`, {
+        params: { division }
+    }).then(res => res.data);
+
 // Error Handling Wrapper
 export const handleApiError = (error) => {
     if (error.response) {

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { getAssignedSubjects } from '../../services/teacherService';
 import { getInternalMarks } from '../../services/internalMarksService';
 
-export default function InternalMarks() {
+function InternalMarks() {
     const [subjects, setSubjects] = useState([]);
     const [selectedSubject, setSelectedSubject] = useState('');
     const [selectedDivision, setSelectedDivision] = useState('');
@@ -98,6 +98,17 @@ export default function InternalMarks() {
                 <p className="text-gray-600">Manage and view internal examination marks for your subjects</p>
             </div>
 
+            <div className="flex justify-end mb-2">
+                <Link
+                    to={`/teacher/student-performance/${selectedSubject}`}
+                    className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Student Performance Summary
+                </Link>
+            </div>
             {/* Search Filters */}
             <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Search Internal Marks</h2>
@@ -182,7 +193,9 @@ export default function InternalMarks() {
                             Add Internal Marks
                         </Link>
                     </div>
+
                 )}
+
             </div>
 
             {/* Error Message */}
@@ -283,9 +296,9 @@ export default function InternalMarks() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${grade === 'A+' || grade === 'A' ? 'bg-green-100 text-green-800' :
-                                                        grade === 'B+' || grade === 'B' ? 'bg-yellow-100 text-yellow-800' :
-                                                            grade === 'C' || grade === 'D' ? 'bg-orange-100 text-orange-800' :
-                                                                'bg-red-100 text-red-800'
+                                                    grade === 'B+' || grade === 'B' ? 'bg-yellow-100 text-yellow-800' :
+                                                        grade === 'C' || grade === 'D' ? 'bg-orange-100 text-orange-800' :
+                                                            'bg-red-100 text-red-800'
                                                     }`}>
                                                     {grade}
                                                 </span>
@@ -328,3 +341,4 @@ export default function InternalMarks() {
         </div>
     );
 }
+export default InternalMarks;
