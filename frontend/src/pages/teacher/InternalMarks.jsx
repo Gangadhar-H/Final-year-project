@@ -92,22 +92,21 @@ function InternalMarks() {
 
     return (
         <div className="p-6">
-            {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">Internal Marks Management</h1>
-                <p className="text-gray-600">Manage and view internal examination marks for your subjects</p>
-            </div>
+            <div className="flex justify-between items-center mb-6">
+                {/* Header */}
+                <div className="mb-6">
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Internal Marks Management</h1>
+                    <p className="text-gray-600">Manage and view internal examination marks for your subjects</p>
+                </div>
 
-            <div className="flex justify-end mb-2">
-                <Link
-                    to={`/teacher/student-performance/${selectedSubject}`}
-                    className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    Student Performance Summary
-                </Link>
+                <div className="mb-2">
+                    <Link
+                        to={`/teacher/student-performance`}
+                        className="inline-flex items-center px-4 py-2 bg-orange-300 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                        Student Performance
+                    </Link>
+                </div>
             </div>
             {/* Search Filters */}
             <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
@@ -173,7 +172,7 @@ function InternalMarks() {
                         <button
                             onClick={handleSearch}
                             disabled={loading || !selectedSubject}
-                            className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
                             {loading ? 'Searching...' : 'Search'}
                         </button>
@@ -185,12 +184,12 @@ function InternalMarks() {
                     <div className="flex justify-end">
                         <Link
                             to={`/teacher/add-internal-marks/${selectedSubject}`}
-                            className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            className="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                         >
                             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
-                            Add Internal Marks
+                            Add Marks
                         </Link>
                     </div>
 

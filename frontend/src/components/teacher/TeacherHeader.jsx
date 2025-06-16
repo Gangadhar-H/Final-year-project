@@ -56,7 +56,7 @@ const TeacherHeader = () => {
                         className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md p-2"
                     >
                         {/* Avatar */}
-                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
+                        <div className="w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
                             {user?.name?.charAt(0).toUpperCase() || 'T'}
                         </div>
                         <span className="hidden md:block font-medium">

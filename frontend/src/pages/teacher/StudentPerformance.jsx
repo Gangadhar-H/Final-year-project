@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getAssignedSubjects } from '../../services/teacherService';
 import { getStudentPerformanceSummary, getInternalMarks } from '../../services/internalMarksService';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 
 export default function StudentPerformance() {
     const navigate = useNavigate();
@@ -513,13 +513,9 @@ export default function StudentPerformance() {
                                             />
                                             <Tooltip content={<CustomTooltip />} />
                                             <Legend />
-                                            <Bar
-                                                dataKey="percentage"
-                                                name="Percentage (%)"
-                                                radius={[4, 4, 0, 0]}
-                                            >
+                                            <Bar dataKey="percentage" name="Percentage (%)" radius={[4, 4, 0, 0]}>
                                                 {prepareChartData(performanceData.marks).map((entry, index) => (
-                                                    <Bar
+                                                    <Cell
                                                         key={`cell-${index}`}
                                                         fill={
                                                             entry.percentage >= 90 ? '#10b981' :
@@ -534,6 +530,7 @@ export default function StudentPerformance() {
                                                 ))}
                                             </Bar>
                                         </BarChart>
+
                                     )}
                                 </ResponsiveContainer>
                             </div>
