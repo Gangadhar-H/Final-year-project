@@ -1,5 +1,6 @@
 import { Admin } from "../models/admin.model.js";
 import { Teacher } from "../models/teacher.model.js";
+import { Student } from "../models/student.model.js";
 
 class ApiError extends Error {
     constructor(statusCode, message) {
@@ -19,6 +20,8 @@ const generateAccessAndRefreshTokens = async (userId, userType = 'admin') => {
             user = await Admin.findById(userId);
         } else if (userType === 'teacher') {
             user = await Teacher.findById(userId);
+        } else if (userType === 'student') {
+            user = await Student.findById(userId);
         } else {
             throw new ApiError(400, "Invalid user type");
         }
