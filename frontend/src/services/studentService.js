@@ -25,6 +25,7 @@ class StudentService {
     async getDashboard() {
         try {
             const response = await API.get('/student/dashboard');
+            console.log(response);
             return response.data;
         } catch (error) {
             throw error.response?.data || error;

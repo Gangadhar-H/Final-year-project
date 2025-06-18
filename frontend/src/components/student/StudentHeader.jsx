@@ -45,7 +45,7 @@ const StudentHeader = ({ onMenuToggle }) => {
                                 {user?.student?.name || user?.name}
                             </p>
                             <p className="text-xs text-gray-500">
-                                {user?.student?.uucmsNo} • Sem {user?.student?.semester}
+                                {user?.uucmsNo} • Sem {user?.semester?.semesterNumber}
                             </p>
                         </div>
                     </button>

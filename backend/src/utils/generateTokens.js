@@ -14,7 +14,6 @@ class ApiError extends Error {
 const generateAccessAndRefreshTokens = async (userId, userType = 'admin') => {
     try {
         let user;
-        console.log(`Generated tokens for ${userType} with ID: ${userId}`);
         // Determine which model to use based on userType
         if (userType === 'admin') {
             user = await Admin.findById(userId);
@@ -32,11 +31,7 @@ const generateAccessAndRefreshTokens = async (userId, userType = 'admin') => {
         }
 
         const accessToken = user.generateAccessToken();
-        console.log("User: ", user);
         const refreshToken = user.generateRefreshToken();
-
-        console.log(`Access Token: ${accessToken}`);
-        console.log(`Refresh Token: ${refreshToken}`);
 
         user.refreshToken = refreshToken;
         await user.save({ validateBeforeSave: false });

@@ -104,14 +104,14 @@ const getDashboard = asyncHandler(async (req, res) => {
         .limit(5);
 
     // Get upcoming study materials (recent uploads)
-    const recentMaterials = await StudyMaterial.find({
-        semester: student.semester._id,
-        division: { $in: [student.division, 'all'] }
-    })
-        .populate('subject', 'subjectName')
-        .populate('uploadedBy', 'name teacherId')
-        .sort({ uploadDate: -1 })
-        .limit(5);
+    // const recentMaterials = await StudyMaterial.find({
+    //     semester: student.semester._id,
+    //     division: { $in: [student.division, 'all'] }
+    // })
+    //     .populate('subject', 'subjectName')
+    //     .populate('uploadedBy', 'name teacherId')
+    //     .sort({ uploadDate: -1 })
+    //     .limit(5);
 
     // Calculate average marks
     const allMarks = await InternalMark.find({ student: studentId });
@@ -136,7 +136,7 @@ const getDashboard = asyncHandler(async (req, res) => {
             totalAssignments: allMarks.length
         },
         recentMarks,
-        recentMaterials: recentMaterials.slice(0, 3)
+        // recentMaterials: recentMaterials.slice(0, 3)
     };
 
     return res.status(200).json({

@@ -2,6 +2,23 @@ import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 const MarksChart = ({ marksData, chartType = 'bar' }) => {
+    // Handle case where marksData is undefined or null
+    if (!marksData) {
+        return (
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                        Subject-wise Performance
+                    </h3>
+                </div>
+                <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-500">Loading marks data...</p>
+                </div>
+            </div>
+        );
+    }
+
     // Process marks data for chart
     const processedData = marksData.subjectWiseStats?.map(stat => ({
         subject: stat.subject.subjectName.length > 10
@@ -30,12 +47,6 @@ const MarksChart = ({ marksData, chartType = 'bar' }) => {
         return null;
     };
 
-    const getBarColor = (percentage) => {
-        if (percentage >= 80) return '#10B981'; // Green
-        if (percentage >= 60) return '#F59E0B'; // Yellow
-        return '#EF4444'; // Red
-    };
-
     return (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center justify-between mb-4">
@@ -43,7 +54,7 @@ const MarksChart = ({ marksData, chartType = 'bar' }) => {
                     Subject-wise Performance
                 </h3>
                 <div className="text-sm text-gray-600">
-                    Average: {marksData.statistics?.averagePercentage}%
+                    Average: {marksData.statistics?.averagePercentage || 0}%
                 </div>
             </div>
 
@@ -123,11 +134,11 @@ const MarksChart = ({ marksData, chartType = 'bar' }) => {
                     </div>
                     <div className="text-center">
                         <p className="text-sm text-gray-600">Avg. Percentage</p>
-                        <p className={`font-semibold ${marksData.statistics?.averagePercentage >= 80 ? 'text-green-600' :
-                                marksData.statistics?.averagePercentage >= 60 ? 'text-yellow-600' :
-                                    'text-red-600'
+                        <p className={`font-semibold ${(marksData.statistics?.averagePercentage || 0) >= 80 ? 'text-green-600' :
+                            (marksData.statistics?.averagePercentage || 0) >= 60 ? 'text-yellow-600' :
+                                'text-red-600'
                             }`}>
-                            {marksData.statistics?.averagePercentage}%
+                            {marksData.statistics?.averagePercentage || 0}%
                         </p>
                     </div>
                 </div>

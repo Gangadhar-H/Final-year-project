@@ -1,139 +1,83 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
-const MarksChart = ({ marksData, chartType = 'bar' }) => {
-    // Process marks data for chart
-    const processedData = marksData.subjectWiseStats?.map(stat => ({
-        subject: stat.subject.subjectName.length > 10
-            ? stat.subject.subjectCode
-            : stat.subject.subjectName,
-        percentage: parseFloat(stat.averagePercentage),
-        fullName: stat.subject.subjectName,
-        totalExams: stat.totalExams
-    })) || [];
-
-    const CustomTooltip = ({ active, payload, label }) => {
-        if (active && payload && payload.length) {
-            const data = payload[0].payload;
-            return (
-                <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-                    <p className="font-medium text-gray-900">{data.fullName}</p>
-                    <p className="text-sm text-blue-600">
-                        Average: {data.percentage}%
-                    </p>
-                    <p className="text-xs text-gray-500">
-                        Total Exams: {data.totalExams}
-                    </p>
-                </div>
-            );
+const StatCard = ({ title, value, subtitle, icon: Icon, color = 'blue', trend }) => {
+    const colorClasses = {
+        blue: {
+            bg: 'bg-blue-50',
+            icon: 'text-blue-600',
+            text: 'text-blue-600',
+            border: 'border-blue-200'
+        },
+        green: {
+            bg: 'bg-green-50',
+            icon: 'text-green-600',
+            text: 'text-green-600',
+            border: 'border-green-200'
+        },
+        yellow: {
+            bg: 'bg-yellow-50',
+            icon: 'text-yellow-600',
+            text: 'text-yellow-600',
+            border: 'border-yellow-200'
+        },
+        red: {
+            bg: 'bg-red-50',
+            icon: 'text-red-600',
+            text: 'text-red-600',
+            border: 'border-red-200'
+        },
+        purple: {
+            bg: 'bg-purple-50',
+            icon: 'text-purple-600',
+            text: 'text-purple-600',
+            border: 'border-purple-200'
         }
-        return null;
     };
 
-    const getBarColor = (percentage) => {
-        if (percentage >= 80) return '#10B981'; // Green
-        if (percentage >= 60) return '#F59E0B'; // Yellow
-        return '#EF4444'; // Red
-    };
+    const currentColor = colorClasses[color] || colorClasses.blue;
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                    Subject-wise Performance
-                </h3>
-                <div className="text-sm text-gray-600">
-                    Average: {marksData.statistics?.averagePercentage}%
-                </div>
-            </div>
-
-            {processedData.length > 0 ? (
-                <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                        {chartType === 'line' ? (
-                            <LineChart data={processedData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis
-                                    dataKey="subject"
-                                    tick={{ fontSize: 12 }}
-                                    angle={-45}
-                                    textAnchor="end"
-                                    height={80}
-                                />
-                                <YAxis
-                                    domain={[0, 100]}
-                                    tick={{ fontSize: 12 }}
-                                />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Line
-                                    type="monotone"
-                                    dataKey="percentage"
-                                    stroke="#3B82F6"
-                                    strokeWidth={2}
-                                    dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-                                />
-                            </LineChart>
-                        ) : (
-                            <BarChart data={processedData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis
-                                    dataKey="subject"
-                                    tick={{ fontSize: 12 }}
-                                    angle={-45}
-                                    textAnchor="end"
-                                    height={80}
-                                />
-                                <YAxis
-                                    domain={[0, 100]}
-                                    tick={{ fontSize: 12 }}
-                                />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Bar
-                                    dataKey="percentage"
-                                    fill="#3B82F6"
-                                    radius={[4, 4, 0, 0]}
-                                />
-                            </BarChart>
-                        )}
-                    </ResponsiveContainer>
-                </div>
-            ) : (
-                <div className="text-center py-12">
-                    <div className="text-gray-400 text-6xl mb-4">📈</div>
-                    <p className="text-gray-500">No marks data available</p>
-                </div>
-            )}
-
-            {/* Performance indicators */}
-            {processedData.length > 0 && (
-                <div className="mt-4 grid grid-cols-3 gap-4">
-                    <div className="text-center">
-                        <p className="text-sm text-gray-600">Best Subject</p>
-                        <p className="font-semibold text-green-600">
-                            {processedData.reduce((best, current) =>
-                                current.percentage > best.percentage ? current : best
-                            ).subject}
+        <div className={`bg-white p-6 rounded-lg shadow-sm border ${currentColor.border} hover:shadow-md transition-shadow duration-200`}>
+            <div className="flex items-center justify-between">
+                <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-600 mb-1">
+                        {title}
+                    </p>
+                    <p className={`text-2xl font-bold ${currentColor.text} mb-1`}>
+                        {value}
+                    </p>
+                    {subtitle && (
+                        <p className="text-sm text-gray-500">
+                            {subtitle}
                         </p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-sm text-gray-600">Total Exams</p>
-                        <p className="font-semibold text-blue-600">
-                            {marksData.statistics?.totalExams || 0}
-                        </p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-sm text-gray-600">Avg. Percentage</p>
-                        <p className={`font-semibold ${marksData.statistics?.averagePercentage >= 80 ? 'text-green-600' :
-                                marksData.statistics?.averagePercentage >= 60 ? 'text-yellow-600' :
-                                    'text-red-600'
+                    )}
+                    {trend && (
+                        <div className={`flex items-center mt-2 text-xs ${trend.direction === 'up' ? 'text-green-600' :
+                                trend.direction === 'down' ? 'text-red-600' :
+                                    'text-gray-600'
                             }`}>
-                            {marksData.statistics?.averagePercentage}%
-                        </p>
-                    </div>
+                            {trend.direction === 'up' && (
+                                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L10 4.414 4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                </svg>
+                            )}
+                            {trend.direction === 'down' && (
+                                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L10 15.586l5.293-5.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                            )}
+                            {trend.value}
+                        </div>
+                    )}
                 </div>
-            )}
+                {Icon && (
+                    <div className={`p-3 rounded-full ${currentColor.bg} ml-4`}>
+                        <Icon className={`w-6 h-6 ${currentColor.icon}`} />
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
 
-export default MarksChart;
+export default StatCard;
