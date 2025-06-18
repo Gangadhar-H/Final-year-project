@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Index from './pages/admin/Index';
 import Unauthorized from './pages/Unauthorized';
 import TeacherIndex from './pages/teacher/Index';
+import StudentIndex from './pages/student/Index';
 
 function App() {
   return (
@@ -27,6 +28,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['teacher']}>
                 <TeacherIndex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/*"
+            element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <StudentIndex />
               </ProtectedRoute>
             }
           />

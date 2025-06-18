@@ -9,13 +9,13 @@ import mongoose from "mongoose";
 
 // Student Login
 const loginStudent = asyncHandler(async (req, res) => {
-    const { uucmsNo, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!uucmsNo || !password) {
+    if (!email || !password) {
         return res.status(400).json({ message: "UUCMS Number and password are required" });
     }
 
-    const student = await Student.findOne({ uucmsNo }).populate('semester');
+    const student = await Student.findOne({ email }).populate('semester');
     if (!student) {
         return res.status(404).json({ message: "Student not found" });
     }

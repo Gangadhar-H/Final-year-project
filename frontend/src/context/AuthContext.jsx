@@ -40,6 +40,10 @@ export const AuthProvider = ({ children }) => {
                 response = await API.post('/teacher/login', credentials);
                 const { teacher, role: userRole } = response.data;
                 userObj = { ...teacher, role: userRole };
+            } else if (role === 'student') {
+                response = await API.post('/student/login', credentials);
+                const { student, role: userRole } = response.data;
+                userObj = { ...student, role: userRole };
             } else {
                 throw new Error('Invalid role specified');
             }
@@ -62,20 +66,29 @@ export const AuthProvider = ({ children }) => {
             setLoading(true);
             setError(null);
 
-            // Try teacher login first, then admin
+            // Try teacher login first
             try {
                 const teacherResponse = await API.post('/teacher/login', credentials);
                 const { teacher, role } = teacherResponse.data;
                 const userObj = { ...teacher, role };
                 setUser(userObj);
-                return role;
+                return role; // ✅ Important!
             } catch (teacherError) {
                 // If teacher login fails, try admin
-                const adminResponse = await API.post('/admin/login', credentials);
-                const { admin, role } = adminResponse.data;
-                const userObj = { ...admin, role };
-                setUser(userObj);
-                return role;
+                try {
+                    const adminResponse = await API.post('/admin/login', credentials);
+                    const { admin, role } = adminResponse.data;
+                    const userObj = { ...admin, role };
+                    setUser(userObj);
+                    return role; // ✅ Important!
+                } catch (adminError) {
+                    // If admin login also fails, try student
+                    const studentResponse = await API.post('/student/login', credentials);
+                    const { student, role } = studentResponse.data;
+                    const userObj = { ...student, role };
+                    setUser(userObj);
+                    return role; // ✅ Important!
+                }
             }
 
         } catch (err) {
@@ -87,6 +100,8 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+
+
     // Logout function with role-specific API calls
     const logout = async () => {
         try {
@@ -96,6 +111,8 @@ export const AuthProvider = ({ children }) => {
                 await API.post('/admin/logout');
             } else if (user?.role === 'teacher') {
                 await API.post('/teacher/logout');
+            } else if (user?.role === 'student') {
+                await API.post('/student/logout');
             }
 
         } catch (err) {
