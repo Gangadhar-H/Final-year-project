@@ -23,7 +23,7 @@ export default function AdminLayout() {
         <div className="flex h-screen bg-gray-100">
             {/* Sidebar */}
             <aside className="w-64 bg-white border-r">
-                <div className="p-4 text-2xl font-bold">eduVerse: Admin</div>
+                <div className="p-4 text-2xl font-bold">EduVerse: Admin</div>
                 <nav className="mt-6">
                     {navItems.map((item) => (
                         <NavLink

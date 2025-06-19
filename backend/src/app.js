@@ -19,12 +19,13 @@ import adminRouter from "./routes/admin.route.js";
 import teacherRouter from "./routes/teacher.route.js";
 import questionPaperRouter from "./routes/questionPaper.route.js"
 import studentRouter from "./routes/student.route.js";
-
+import officeRouter from "./routes/office.route.js";
 
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/teacher", teacherRouter);
 app.use("/api/v1/teacher", questionPaperRouter);
 app.use("/api/v1/student", studentRouter);
+app.use("/api/v1/office", officeRouter);
 app.get("/", (req, res) => {
     res.status(200).json({
         message: "Welcome to the School Management System API",
