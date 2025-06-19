@@ -6,6 +6,8 @@ import StudentHeader from '../../components/student/StudentHeader';
 import StudentSidebar from '../../components/student/StudentSidebar';
 import Profile from './Profile';
 import Subjects from './Subjects';
+import InternalMarks from './InternalMarks';
+import Attendance from './Attendance';
 
 export default function StudentIndex() {
     const { user } = useAuth();
@@ -38,6 +40,8 @@ export default function StudentIndex() {
                         <Route index element={<Dashboard />} />
                         <Route path="profile" element={<Profile />} />
                         <Route path="subjects" element={<Subjects />} />
+                        <Route path="internal-marks" element={<InternalMarks />} />
+                        <Route path="attendance" element={<Attendance />} />
                         <Route path="unauthorized" element={<Unauthorized />} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
