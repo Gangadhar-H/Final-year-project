@@ -127,6 +127,8 @@ export const AuthProvider = ({ children }) => {
                 await API.post('/teacher/logout');
             } else if (user?.role === 'student') {
                 await API.post('/student/logout');
+            } else if (user?.role === 'officeStaff') {
+                await API.post('/office/logout');
             }
 
         } catch (err) {

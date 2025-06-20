@@ -4,7 +4,7 @@ import OfficeSidebar from '../../components/office/OfficeSidebar';
 import OfficeHeader from '../../components/office/OfficeHeader';
 import Dashboard from './Dashboard';
 import Profile from './Profile';
-// import StudentsPage from './StudentsPage';
+import StudentsPage from './StudentsPage';
 // import StudentDetails from './StudentDetails';
 // import AddStudent from '../../components/office/AddStudent';
 // import EditStudent from '../../components/office/EditStudent';
@@ -63,13 +63,13 @@ export default function Index() {
                 <Route path="profile" element={<Profile />} />
 
                 {/* Student Management Routes */}
-                {/* <Route path="students">
+                <Route path="students">
                     <Route index element={<StudentsPage />} />
-                    <Route path="add" element={<AddStudent />} />
-                    <Route path="bulk-upload" element={<BulkUploadStudents />} />
-                    <Route path=":studentId" element={<StudentDetails />} />
-                    <Route path=":studentId/edit" element={<EditStudent />} />
-                </Route> */}
+                    {/* <Route path="add" element={<AddStudent />} /> */}
+                    {/* <Route path="bulk-upload" element={<BulkUploadStudents />} /> */}
+                    {/* <Route path=":studentId" element={<StudentDetails />} /> */}
+                    {/* <Route path=":studentId/edit" element={<EditStudent />} /> */}
+                </Route>
 
                 {/* Unauthorized access */}
                 <Route path="unauthorized" element={<Unauthorized />} />

@@ -15,6 +15,9 @@ const Login = () => {
 
     // Redirect if user is already authenticated
     useEffect(() => {
+        if (user && user.role === 'officeStaff') {
+            navigate('/office/', { replace: true });
+        }
         if (user && user.role) {
             navigate(`/${user.role}/`, { replace: true });
         }
@@ -55,8 +58,14 @@ const Login = () => {
                 role = await login(credentials, formData.userType);
             }
 
-            // Navigate to appropriate dashboard
-            navigate(`/${role}/`, { replace: true });
+            if (role === 'officeStaff') {
+                console.log('Redirecting to office staff dashboard');
+                navigate('/office/', { replace: true });
+                return;
+            } else {
+                // Navigate to appropriate dashboard
+                navigate(`/${role}/`, { replace: true });
+            }
 
         } catch (err) {
             console.error('Login error:', err);
