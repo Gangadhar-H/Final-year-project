@@ -6,6 +6,7 @@ import Index from './pages/admin/Index';
 import Unauthorized from './pages/Unauthorized';
 import TeacherIndex from './pages/teacher/Index';
 import StudentIndex from './pages/student/Index';
+import OfficeIndex from './pages/office/Index'
 
 function App() {
   return (
@@ -36,6 +37,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['student']}>
                 <StudentIndex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/office/*"
+            element={
+              <ProtectedRoute allowedRoles={['officeStaff']}>
+                <OfficeIndex />
               </ProtectedRoute>
             }
           />

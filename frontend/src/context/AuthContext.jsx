@@ -23,6 +23,8 @@ export const AuthProvider = ({ children }) => {
         }
     }, [user]);
 
+    console.log("Usr: ", user);
+
     // Generic login function that handles both admin and teacher
     const login = async (credentials, role = 'admin') => {
         try {
@@ -44,6 +46,10 @@ export const AuthProvider = ({ children }) => {
                 response = await API.post('/student/login', credentials);
                 const { student, role: userRole } = response.data;
                 userObj = { ...student, role: userRole };
+            } else if (role === 'office') {
+                response = await API.post('/office/login', credentials);
+                const { office, role: userRole } = response.data;
+                userObj = { ...office, role: userRole };
             } else {
                 throw new Error('Invalid role specified');
             }
@@ -72,7 +78,7 @@ export const AuthProvider = ({ children }) => {
                 const { teacher, role } = teacherResponse.data;
                 const userObj = { ...teacher, role };
                 setUser(userObj);
-                return role; // ✅ Important!
+                return role;
             } catch (teacherError) {
                 // If teacher login fails, try admin
                 try {
@@ -80,14 +86,23 @@ export const AuthProvider = ({ children }) => {
                     const { admin, role } = adminResponse.data;
                     const userObj = { ...admin, role };
                     setUser(userObj);
-                    return role; // ✅ Important!
+                    return role;
                 } catch (adminError) {
-                    // If admin login also fails, try student
-                    const studentResponse = await API.post('/student/login', credentials);
-                    const { student, role } = studentResponse.data;
-                    const userObj = { ...student, role };
-                    setUser(userObj);
-                    return role; // ✅ Important!
+                    // If admin login fails, try student
+                    try {
+                        const studentResponse = await API.post('/student/login', credentials);
+                        const { student, role } = studentResponse.data;
+                        const userObj = { ...student, role };
+                        setUser(userObj);
+                        return role;
+                    } catch (studentError) {
+                        // If student login fails, try office staff
+                        const officeResponse = await API.post('/office/login', credentials);
+                        const { officeStaff, role } = officeResponse.data;
+                        const userObj = { ...officeStaff, role };
+                        setUser(userObj);
+                        return role;
+                    }
                 }
             }
 
