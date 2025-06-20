@@ -113,7 +113,6 @@ export const AuthProvider = ({ children }) => {
             setLoading(false);
         }
     };
-    console.log("Usr: ", user);
 
 
 

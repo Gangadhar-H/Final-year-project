@@ -22,7 +22,7 @@ const generateAccessAndRefreshTokens = async (userId, userType = 'admin') => {
             user = await Teacher.findById(userId);
         } else if (userType === 'student') {
             user = await Student.findById(userId);
-        } else if (userType === 'officeStaff') {
+        } else if (userType === 'office') {
             user = await OfficeStaff.findById(userId);
         } else {
             throw new ApiError(400, "Invalid user type");

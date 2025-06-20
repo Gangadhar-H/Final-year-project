@@ -76,7 +76,7 @@ const loginOfficeStaff = asyncHandler(async (req, res) => {
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
         officeStaff._id,
-        'officeStaff'
+        'office'
     );
 
     const loggedInStaff = await OfficeStaff.findById(officeStaff._id)
