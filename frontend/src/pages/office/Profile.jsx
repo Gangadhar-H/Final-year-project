@@ -1,472 +1,532 @@
-import React, { useState } from 'react';
-import { toast } from 'react-hot-toast';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import officeService from '../../services/officeService';
+import { toast } from 'react-toastify';
 import {
     User,
     Mail,
     IdCard,
-    Building,
+    Briefcase,
     Shield,
     Key,
-    Edit3,
     Save,
-    X,
     Eye,
-    EyeOff
+    EyeOff,
+    CheckCircle,
+    AlertCircle
 } from 'lucide-react';
-import officeService from '../../services/officeService';
 
-const Profile = ({ user, onProfileUpdate }) => {
-    const [isEditing, setIsEditing] = useState(false);
-    const [isChangingPassword, setIsChangingPassword] = useState(false);
-    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-    const [showNewPassword, setShowNewPassword] = useState(false);
+export default function Profile() {
+    const { user, updateUser } = useAuth();
     const [loading, setLoading] = useState(false);
+    const [activeTab, setActiveTab] = useState('profile');
 
+    // Profile form state
     const [profileData, setProfileData] = useState({
-        name: user?.name || '',
-        email: user?.email || ''
+        name: '',
+        email: ''
     });
 
+    // Password form state
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
     });
 
-    const [errors, setErrors] = useState({});
+    // UI state
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [profileErrors, setProfileErrors] = useState({});
+    const [passwordErrors, setPasswordErrors] = useState({});
+
+    // Load profile data on component mount
+    useEffect(() => {
+        if (user) {
+            setProfileData({
+                name: user.name || '',
+                email: user.email || ''
+            });
+        }
+    }, [user]);
+
+    // Handle profile form changes
+    const handleProfileChange = (e) => {
+        const { name, value } = e.target;
+        setProfileData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+
+        // Clear specific error when user starts typing
+        if (profileErrors[name]) {
+            setProfileErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+    };
+
+    // Handle password form changes
+    const handlePasswordChange = (e) => {
+        const { name, value } = e.target;
+        setPasswordData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+
+        // Clear specific error when user starts typing
+        if (passwordErrors[name]) {
+            setPasswordErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+    };
+
+    // Validate profile form
+    const validateProfile = () => {
+        const errors = {};
+
+        if (!profileData.name.trim()) {
+            errors.name = 'Name is required';
+        }
+
+        if (!profileData.email.trim()) {
+            errors.email = 'Email is required';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profileData.email)) {
+            errors.email = 'Please enter a valid email address';
+        }
+
+        return errors;
+    };
+
+    // Validate password form
+    const validatePassword = () => {
+        const errors = {};
+
+        if (!passwordData.currentPassword) {
+            errors.currentPassword = 'Current password is required';
+        }
+
+        if (!passwordData.newPassword) {
+            errors.newPassword = 'New password is required';
+        } else if (passwordData.newPassword.length < 6) {
+            errors.newPassword = 'New password must be at least 6 characters';
+        }
+
+        if (!passwordData.confirmPassword) {
+            errors.confirmPassword = 'Please confirm your new password';
+        } else if (passwordData.newPassword !== passwordData.confirmPassword) {
+            errors.confirmPassword = 'Passwords do not match';
+        }
+
+        return errors;
+    };
 
     // Handle profile update
-    const handleProfileUpdate = async (e) => {
+    const handleProfileSubmit = async (e) => {
         e.preventDefault();
 
-        // Validate form
-        const newErrors = {};
-        if (!profileData.name.trim()) {
-            newErrors.name = 'Name is required';
-        }
-        if (!profileData.email.trim()) {
-            newErrors.email = 'Email is required';
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profileData.email)) {
-            newErrors.email = 'Please enter a valid email address';
-        }
-
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
+        const errors = validateProfile();
+        if (Object.keys(errors).length > 0) {
+            setProfileErrors(errors);
             return;
         }
 
+        setLoading(true);
         try {
-            setLoading(true);
-            setErrors({});
+            const response = await officeService.updateProfile(profileData);
 
-            await officeService.updateProfile(profileData);
+            // Update user in context
+            updateUser(response.staff);
 
             toast.success('Profile updated successfully!');
-            setIsEditing(false);
+            setProfileErrors({});
 
-            // Refresh user data
-            if (onProfileUpdate) {
-                onProfileUpdate();
-            }
         } catch (error) {
-            console.error('Profile update failed:', error);
+            console.error('Profile update error:', error);
             toast.error(error.message || 'Failed to update profile');
-            setErrors({ general: error.message || 'Failed to update profile' });
         } finally {
             setLoading(false);
         }
     };
 
     // Handle password change
-    const handlePasswordChange = async (e) => {
+    const handlePasswordSubmit = async (e) => {
         e.preventDefault();
 
-        // Validate password form
-        const newErrors = {};
-        if (!passwordData.currentPassword) {
-            newErrors.currentPassword = 'Current password is required';
-        }
-        if (!passwordData.newPassword) {
-            newErrors.newPassword = 'New password is required';
-        } else if (passwordData.newPassword.length < 6) {
-            newErrors.newPassword = 'New password must be at least 6 characters';
-        }
-        if (passwordData.newPassword !== passwordData.confirmPassword) {
-            newErrors.confirmPassword = 'Passwords do not match';
-        }
-
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
+        const errors = validatePassword();
+        if (Object.keys(errors).length > 0) {
+            setPasswordErrors(errors);
             return;
         }
 
+        setLoading(true);
         try {
-            setLoading(true);
-            setErrors({});
-
             await officeService.changePassword({
                 currentPassword: passwordData.currentPassword,
                 newPassword: passwordData.newPassword
             });
 
             toast.success('Password changed successfully!');
-            setIsChangingPassword(false);
             setPasswordData({
                 currentPassword: '',
                 newPassword: '',
                 confirmPassword: ''
             });
+            setPasswordErrors({});
+
         } catch (error) {
-            console.error('Password change failed:', error);
+            console.error('Password change error:', error);
             toast.error(error.message || 'Failed to change password');
-            setErrors({ password: error.message || 'Failed to change password' });
         } finally {
             setLoading(false);
         }
     };
 
-    // Cancel editing
-    const handleCancelEdit = () => {
-        setIsEditing(false);
-        setProfileData({
-            name: user?.name || '',
-            email: user?.email || ''
-        });
-        setErrors({});
-    };
-
-    // Cancel password change
-    const handleCancelPasswordChange = () => {
-        setIsChangingPassword(false);
-        setPasswordData({
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: ''
-        });
-        setErrors({});
-    };
-
-    // Get permission display text
-    const getPermissionText = (key, value) => {
-        const permissionLabels = {
-            studentManagement: 'Student Management',
-            feeManagement: 'Fee Management',
-            certificateIssue: 'Certificate Issue',
-            noticeManagement: 'Notice Management',
-            reportGeneration: 'Report Generation'
-        };
-
-        return {
-            label: permissionLabels[key] || key,
-            status: value ? 'Granted' : 'Not Granted',
-            color: value ? 'text-green-600' : 'text-red-600',
-            bg: value ? 'bg-green-50' : 'bg-red-50'
-        };
+    // Get permission status display
+    const getPermissionStatus = (permission) => {
+        return user?.permissions?.[permission] ? (
+            <span className="inline-flex items-center gap-1 text-green-600">
+                <CheckCircle className="w-4 h-4" />
+                Granted
+            </span>
+        ) : (
+            <span className="inline-flex items-center gap-1 text-red-600">
+                <AlertCircle className="w-4 h-4" />
+                Not Granted
+            </span>
+        );
     };
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto space-y-6">
             {/* Page Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
-                <p className="text-gray-600">Manage your account information and settings</p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Profile Information Card */}
-                <div className="lg:col-span-2">
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-semibold text-gray-900">
-                                Personal Information
-                            </h2>
-                            {!isEditing && (
-                                <button
-                                    onClick={() => setIsEditing(true)}
-                                    className="flex items-center space-x-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                >
-                                    <Edit3 className="h-4 w-4" />
-                                    <span>Edit</span>
-                                </button>
-                            )}
-                        </div>
-
-                        {!isEditing ? (
-                            // Display Mode
-                            <div className="space-y-4">
-                                <div className="flex items-center space-x-3">
-                                    <User className="h-5 w-5 text-gray-400" />
-                                    <div>
-                                        <p className="text-sm text-gray-500">Full Name</p>
-                                        <p className="font-medium text-gray-900">{user?.name}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center space-x-3">
-                                    <Mail className="h-5 w-5 text-gray-400" />
-                                    <div>
-                                        <p className="text-sm text-gray-500">Email Address</p>
-                                        <p className="font-medium text-gray-900">{user?.email}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center space-x-3">
-                                    <IdCard className="h-5 w-5 text-gray-400" />
-                                    <div>
-                                        <p className="text-sm text-gray-500">Staff ID</p>
-                                        <p className="font-medium text-gray-900">{user?.staffId}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center space-x-3">
-                                    <Building className="h-5 w-5 text-gray-400" />
-                                    <div>
-                                        <p className="text-sm text-gray-500">Designation</p>
-                                        <p className="font-medium text-gray-900">{user?.designation}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            // Edit Mode
-                            <form onSubmit={handleProfileUpdate} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Full Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={profileData.name}
-                                        onChange={(e) => setProfileData({
-                                            ...profileData,
-                                            name: e.target.value
-                                        })}
-                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? 'border-red-500' : 'border-gray-300'
-                                            }`}
-                                        placeholder="Enter your full name"
-                                    />
-                                    {errors.name && (
-                                        <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Email Address
-                                    </label>
-                                    <input
-                                        type="email"
-                                        value={profileData.email}
-                                        onChange={(e) => setProfileData({
-                                            ...profileData,
-                                            email: e.target.value
-                                        })}
-                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? 'border-red-500' : 'border-gray-300'
-                                            }`}
-                                        placeholder="Enter your email address"
-                                    />
-                                    {errors.email && (
-                                        <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-                                    )}
-                                </div>
-
-                                {errors.general && (
-                                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                                        <p className="text-red-600 text-sm">{errors.general}</p>
-                                    </div>
-                                )}
-
-                                <div className="flex space-x-3 pt-4">
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        <Save className="h-4 w-4" />
-                                        <span>{loading ? 'Saving...' : 'Save Changes'}</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleCancelEdit}
-                                        className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
-                                    >
-                                        <X className="h-4 w-4" />
-                                        <span>Cancel</span>
-                                    </button>
-                                </div>
-                            </form>
-                        )}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <User className="w-6 h-6 text-blue-600" />
                     </div>
-
-                    {/* Password Change Card */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-semibold text-gray-900">
-                                Security Settings
-                            </h2>
-                            {!isChangingPassword && (
-                                <button
-                                    onClick={() => setIsChangingPassword(true)}
-                                    className="flex items-center space-x-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                >
-                                    <Key className="h-4 w-4" />
-                                    <span>Change Password</span>
-                                </button>
-                            )}
-                        </div>
-
-                        {!isChangingPassword ? (
-                            <div className="flex items-center space-x-3">
-                                <Key className="h-5 w-5 text-gray-400" />
-                                <div>
-                                    <p className="text-sm text-gray-500">Password</p>
-                                    <p className="font-medium text-gray-900">••••••••</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <form onSubmit={handlePasswordChange} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Current Password
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            type={showCurrentPassword ? "text" : "password"}
-                                            value={passwordData.currentPassword}
-                                            onChange={(e) => setPasswordData({
-                                                ...passwordData,
-                                                currentPassword: e.target.value
-                                            })}
-                                            className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.currentPassword ? 'border-red-500' : 'border-gray-300'
-                                                }`}
-                                            placeholder="Enter current password"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                        >
-                                            {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                        </button>
-                                    </div>
-                                    {errors.currentPassword && (
-                                        <p className="text-red-500 text-sm mt-1">{errors.currentPassword}</p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        New Password
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            type={showNewPassword ? "text" : "password"}
-                                            value={passwordData.newPassword}
-                                            onChange={(e) => setPasswordData({
-                                                ...passwordData,
-                                                newPassword: e.target.value
-                                            })}
-                                            className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.newPassword ? 'border-red-500' : 'border-gray-300'
-                                                }`}
-                                            placeholder="Enter new password"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowNewPassword(!showNewPassword)}
-                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                        >
-                                            {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                        </button>
-                                    </div>
-                                    {errors.newPassword && (
-                                        <p className="text-red-500 text-sm mt-1">{errors.newPassword}</p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Confirm New Password
-                                    </label>
-                                    <input
-                                        type="password"
-                                        value={passwordData.confirmPassword}
-                                        onChange={(e) => setPasswordData({
-                                            ...passwordData,
-                                            confirmPassword: e.target.value
-                                        })}
-                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-                                            }`}
-                                        placeholder="Confirm new password"
-                                    />
-                                    {errors.confirmPassword && (
-                                        <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
-                                    )}
-                                </div>
-
-                                {errors.password && (
-                                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                                        <p className="text-red-600 text-sm">{errors.password}</p>
-                                    </div>
-                                )}
-
-                                <div className="flex space-x-3 pt-4">
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        <Key className="h-4 w-4" />
-                                        <span>{loading ? 'Changing...' : 'Change Password'}</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleCancelPasswordChange}
-                                        className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
-                                    >
-                                        <X className="h-4 w-4" />
-                                        <span>Cancel</span>
-                                    </button>
-                                </div>
-                            </form>
-                        )}
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
+                        <p className="text-gray-600">Manage your account information and preferences</p>
                     </div>
                 </div>
+            </div>
 
-                {/* Permissions Card */}
-                <div className="lg:col-span-1">
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div className="flex items-center space-x-2 mb-6">
-                            <Shield className="h-5 w-5 text-gray-700" />
-                            <h2 className="text-xl font-semibold text-gray-900">Permissions</h2>
-                        </div>
+            {/* Tab Navigation */}
+            <div className="bg-white rounded-lg shadow-sm">
+                <div className="border-b border-gray-200">
+                    <nav className="flex space-x-8 px-6">
+                        <button
+                            onClick={() => setActiveTab('profile')}
+                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'profile'
+                                    ? 'border-blue-500 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                        >
+                            Profile Information
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('security')}
+                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'security'
+                                    ? 'border-blue-500 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                        >
+                            Security
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('permissions')}
+                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'permissions'
+                                    ? 'border-blue-500 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                        >
+                            Permissions
+                        </button>
+                    </nav>
+                </div>
 
-                        <div className="space-y-3">
-                            {user?.permissions && Object.entries(user.permissions).map(([key, value]) => {
-                                const permission = getPermissionText(key, value);
-                                return (
-                                    <div key={key} className={`p-3 rounded-lg ${permission.bg}`}>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm font-medium text-gray-900">
-                                                {permission.label}
-                                            </span>
-                                            <span className={`text-xs font-medium ${permission.color}`}>
-                                                {permission.status}
-                                            </span>
+                {/* Tab Content */}
+                <div className="p-6">
+                    {/* Profile Information Tab */}
+                    {activeTab === 'profile' && (
+                        <div className="space-y-6">
+                            <div>
+                                <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+
+                                {/* Read-only fields */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <IdCard className="w-4 h-4 inline mr-2" />
+                                            Staff ID
+                                        </label>
+                                        <div className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600">
+                                            {user?.staffId || 'N/A'}
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
 
-                        <div className="mt-6 p-3 bg-blue-50 rounded-lg">
-                            <p className="text-xs text-blue-600">
-                                Contact your administrator to modify permissions
-                            </p>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <Briefcase className="w-4 h-4 inline mr-2" />
+                                            Designation
+                                        </label>
+                                        <div className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600">
+                                            {user?.designation || 'N/A'}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Editable form */}
+                                <form onSubmit={handleProfileSubmit} className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                <User className="w-4 h-4 inline mr-2" />
+                                                Full Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="name"
+                                                value={profileData.name}
+                                                onChange={handleProfileChange}
+                                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${profileErrors.name ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
+                                                placeholder="Enter your full name"
+                                            />
+                                            {profileErrors.name && (
+                                                <p className="mt-1 text-sm text-red-600">{profileErrors.name}</p>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                <Mail className="w-4 h-4 inline mr-2" />
+                                                Email Address
+                                            </label>
+                                            <input
+                                                type="email"
+                                                name="email"
+                                                value={profileData.email}
+                                                onChange={handleProfileChange}
+                                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${profileErrors.email ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
+                                                placeholder="Enter your email address"
+                                            />
+                                            {profileErrors.email && (
+                                                <p className="mt-1 text-sm text-red-600">{profileErrors.email}</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end">
+                                        <button
+                                            type="submit"
+                                            disabled={loading}
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                        >
+                                            <Save className="w-4 h-4" />
+                                            {loading ? 'Updating...' : 'Update Profile'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                    </div>
+                    )}
+
+                    {/* Security Tab */}
+                    {activeTab === 'security' && (
+                        <div className="space-y-6">
+                            <div>
+                                <h3 className="text-lg font-medium text-gray-900 mb-4">Change Password</h3>
+
+                                <form onSubmit={handlePasswordSubmit} className="space-y-4 max-w-md">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Current Password
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type={showCurrentPassword ? 'text' : 'password'}
+                                                name="currentPassword"
+                                                value={passwordData.currentPassword}
+                                                onChange={handlePasswordChange}
+                                                className={`w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${passwordErrors.currentPassword ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
+                                                placeholder="Enter current password"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                            >
+                                                {showCurrentPassword ? (
+                                                    <EyeOff className="w-4 h-4 text-gray-400" />
+                                                ) : (
+                                                    <Eye className="w-4 h-4 text-gray-400" />
+                                                )}
+                                            </button>
+                                        </div>
+                                        {passwordErrors.currentPassword && (
+                                            <p className="mt-1 text-sm text-red-600">{passwordErrors.currentPassword}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            New Password
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type={showNewPassword ? 'text' : 'password'}
+                                                name="newPassword"
+                                                value={passwordData.newPassword}
+                                                onChange={handlePasswordChange}
+                                                className={`w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${passwordErrors.newPassword ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
+                                                placeholder="Enter new password"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                            >
+                                                {showNewPassword ? (
+                                                    <EyeOff className="w-4 h-4 text-gray-400" />
+                                                ) : (
+                                                    <Eye className="w-4 h-4 text-gray-400" />
+                                                )}
+                                            </button>
+                                        </div>
+                                        {passwordErrors.newPassword && (
+                                            <p className="mt-1 text-sm text-red-600">{passwordErrors.newPassword}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Confirm New Password
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type={showConfirmPassword ? 'text' : 'password'}
+                                                name="confirmPassword"
+                                                value={passwordData.confirmPassword}
+                                                onChange={handlePasswordChange}
+                                                className={`w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${passwordErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
+                                                placeholder="Confirm new password"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                            >
+                                                {showConfirmPassword ? (
+                                                    <EyeOff className="w-4 h-4 text-gray-400" />
+                                                ) : (
+                                                    <Eye className="w-4 h-4 text-gray-400" />
+                                                )}
+                                            </button>
+                                        </div>
+                                        {passwordErrors.confirmPassword && (
+                                            <p className="mt-1 text-sm text-red-600">{passwordErrors.confirmPassword}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex justify-end">
+                                        <button
+                                            type="submit"
+                                            disabled={loading}
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                        >
+                                            <Key className="w-4 h-4" />
+                                            {loading ? 'Changing...' : 'Change Password'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Permissions Tab */}
+                    {activeTab === 'permissions' && (
+                        <div className="space-y-6">
+                            <div>
+                                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                                    <Shield className="w-5 h-5 inline mr-2" />
+                                    Your Permissions
+                                </h3>
+                                <p className="text-gray-600 mb-6">
+                                    These permissions determine what actions you can perform in the system.
+                                </p>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="bg-gray-50 p-4 rounded-lg">
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <h4 className="font-medium text-gray-900">Student Management</h4>
+                                                <p className="text-sm text-gray-600">Add, edit, and manage student records</p>
+                                            </div>
+                                            {getPermissionStatus('studentManagement')}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-gray-50 p-4 rounded-lg">
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <h4 className="font-medium text-gray-900">Fee Management</h4>
+                                                <p className="text-sm text-gray-600">Manage student fees and payments</p>
+                                            </div>
+                                            {getPermissionStatus('feeManagement')}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-gray-50 p-4 rounded-lg">
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <h4 className="font-medium text-gray-900">Certificate Issue</h4>
+                                                <p className="text-sm text-gray-600">Issue certificates and documents</p>
+                                            </div>
+                                            {getPermissionStatus('certificateIssue')}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-gray-50 p-4 rounded-lg">
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <h4 className="font-medium text-gray-900">Notice Management</h4>
+                                                <p className="text-sm text-gray-600">Create and manage notices</p>
+                                            </div>
+                                            {getPermissionStatus('noticeManagement')}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-gray-50 p-4 rounded-lg">
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <h4 className="font-medium text-gray-900">Report Generation</h4>
+                                                <p className="text-sm text-gray-600">Generate various reports</p>
+                                            </div>
+                                            {getPermissionStatus('reportGeneration')}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                                    <p className="text-sm text-blue-800">
+                                        <strong>Note:</strong> If you need additional permissions, please contact your system administrator.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     );
-};
-
-export default Profile;
+}

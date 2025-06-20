@@ -23,7 +23,6 @@ export const AuthProvider = ({ children }) => {
         }
     }, [user]);
 
-    console.log("Usr: ", user);
 
     // Generic login function that handles both admin and teacher
     const login = async (credentials, role = 'admin') => {
@@ -98,8 +97,8 @@ export const AuthProvider = ({ children }) => {
                     } catch (studentError) {
                         // If student login fails, try office staff
                         const officeResponse = await API.post('/office/login', credentials);
-                        const { officeStaff, role } = officeResponse.data;
-                        const userObj = { ...officeStaff, role };
+                        const { staff, role } = officeResponse.data;
+                        const userObj = { ...staff, role };
                         setUser(userObj);
                         return role;
                     }
@@ -114,6 +113,7 @@ export const AuthProvider = ({ children }) => {
             setLoading(false);
         }
     };
+    console.log("Usr: ", user);
 
 
 
