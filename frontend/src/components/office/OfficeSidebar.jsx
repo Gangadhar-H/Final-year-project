@@ -11,7 +11,7 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
         const items = [
             {
                 name: 'Dashboard',
-                href: '/office/dashboard',
+                href: '/office/',
                 icon: (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
@@ -116,10 +116,10 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
     };
 
     return (
-        <div className={`bg-gray-900 text-white flex flex-col transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'
+        <div className={`bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'
             }`}>
             {/* Logo/Brand section */}
-            <div className="p-4 border-b border-gray-700">
+            <div className="p-4 border-b border-gray-200">
                 <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,8 +128,8 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
                     </div>
                     {!isCollapsed && (
                         <div>
-                            <h2 className="text-lg font-semibold">Office Portal</h2>
-                            <p className="text-xs text-gray-400">Management System</p>
+                            <h2 className="text-lg font-semibold text-gray-900">Office Portal</h2>
+                            <p className="text-xs text-gray-500">Management System</p>
                         </div>
                     )}
                 </div>
@@ -137,14 +137,14 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
 
             {/* User info section */}
             {!isCollapsed && (
-                <div className="p-4 border-b border-gray-700">
+                <div className="p-4 border-b border-gray-200">
                     <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
                             {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'OS'}
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium truncate">{user?.name || 'Office Staff'}</p>
-                            <p className="text-xs text-gray-400 truncate">{user?.designation || 'Staff'}</p>
+                            <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'Office Staff'}</p>
+                            <p className="text-xs text-gray-500 truncate">{user?.designation || 'Staff'}</p>
                         </div>
                     </div>
                 </div>
@@ -159,8 +159,8 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
                                 to={item.href}
                                 className={({ isActive }) =>
                                     `flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActiveRoute(item.href)
-                                        ? 'bg-blue-600 text-white'
-                                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                                        ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
+                                        : 'text-gray-700 hover:text-blue-700 hover:bg-gray-100'
                                     }`
                                 }
                                 title={isCollapsed ? item.name : ''}
@@ -184,8 +184,8 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
 
             {/* Permission summary */}
             {!isCollapsed && (
-                <div className="p-4 border-t border-gray-700">
-                    <div className="text-xs text-gray-400 mb-2">Active Permissions</div>
+                <div className="p-4 border-t border-gray-200">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Active Permissions</div>
                     <div className="flex flex-wrap gap-1">
                         {user?.permissions && Object.entries(user.permissions).map(([key, value]) => {
                             if (!value) return null;
@@ -199,7 +199,7 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
                             return (
                                 <span
                                     key={key}
-                                    className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800"
+                                    className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200"
                                 >
                                     {permissionNames[key]}
                                 </span>
@@ -210,19 +210,19 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
             )}
 
             {/* Footer */}
-            <div className={`p-4 border-t border-gray-700 ${isCollapsed ? 'text-center' : ''}`}>
+            <div className={`p-4 border-t border-gray-200 ${isCollapsed ? 'text-center' : ''}`}>
                 <div className="text-xs text-gray-500">
                     {isCollapsed ? (
-                        <div className="w-8 h-8 bg-gray-800 rounded flex items-center justify-center mx-auto">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mx-auto">
+                            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
                     ) : (
-                        <>
-                            <div>EduVerse</div>
+                        <div className="text-center">
+                            <div className="font-medium text-gray-700">EduVerse</div>
                             <div className="mt-1">Office Module v1.0</div>
-                        </>
+                        </div>
                     )}
                 </div>
             </div>

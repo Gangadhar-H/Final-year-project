@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { Outlet } from 'react-router-dom';
 import OfficeSidebar from '../../components/office/OfficeSidebar';
 import OfficeHeader from '../../components/office/OfficeHeader';
-// import Dashboard from './Dashboard';
+import Dashboard from './Dashboard';
 import Profile from './Profile';
 // import StudentsPage from './StudentsPage';
 // import StudentDetails from './StudentDetails';
@@ -56,7 +56,8 @@ export default function Index() {
         <Routes>
             <Route path="/" element={<OfficeLayout />}>
                 {/* Dashboard */}
-                {/* <Route index element={<Dashboard />} /> */}
+                <Route index element={<Dashboard />} />
+                {/* <Route path="dashboard" element={<Dashboard />} /> */}
 
                 {/* Profile */}
                 <Route path="profile" element={<Profile />} />
