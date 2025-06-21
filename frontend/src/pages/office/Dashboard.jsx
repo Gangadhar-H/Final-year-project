@@ -7,9 +7,11 @@ import {
     Calendar,
     GraduationCap,
     FileText,
-    Activity
+    Activity,
+    User
 } from 'lucide-react';
 import officeService from '../../services/officeService';
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
     const [dashboardData, setDashboardData] = useState(null);
@@ -291,19 +293,22 @@ const Dashboard = () => {
                 <div className="bg-white rounded-lg shadow-sm p-6">
                     <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors group">
-                            <UserPlus className="h-8 w-8 text-gray-400 group-hover:text-blue-500 mx-auto mb-2" />
-                            <p className="text-sm font-medium text-gray-600 group-hover:text-blue-600">
-                                Add New Student
+                        <Link
+                            to='/office/students'
+                            className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors group">
+                            <User className="h-8 w-8 text-gray-400 group-hover:text-blue-500 mx-auto mb-2" />
+                            <p className="text-sm font-medium text-gray-600 group-hover:text-blue-600 text-center">
+                                Students
                             </p>
-                        </button>
-
-                        <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors group">
+                        </Link>
+                        <Link
+                            to='/office/students/bulk-upload'
+                            className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors group">
                             <FileText className="h-8 w-8 text-gray-400 group-hover:text-green-500 mx-auto mb-2" />
-                            <p className="text-sm font-medium text-gray-600 group-hover:text-green-600">
+                            <p className="text-sm font-medium text-gray-600 group-hover:text-green-600 text-center">
                                 Bulk Upload
                             </p>
-                        </button>
+                        </Link>
 
                         <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors group">
                             <TrendingUp className="h-8 w-8 text-gray-400 group-hover:text-purple-500 mx-auto mb-2" />

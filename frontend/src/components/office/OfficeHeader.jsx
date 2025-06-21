@@ -73,6 +73,14 @@ const OfficeHeader = () => {
             <div className="flex items-center justify-between">
                 {/* Left side - Title */}
                 <div className="flex items-center space-x-3">
+                    <div className="hidden sm:block text-sm text-gray-500">
+                        {new Date().toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        })}
+                    </div>
                     {/* <div className="flex items-center space-x-2">
                         <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,14 +111,7 @@ const OfficeHeader = () => {
                 {/* Right side - User menu */}
                 <div className="flex items-center space-x-4">
                     {/* Current time */}
-                    <div className="hidden sm:block text-sm text-gray-500">
-                        {new Date().toLocaleDateString('en-US', {
-                            weekday: 'short',
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                        })}
-                    </div>
+
 
                     {/* User dropdown */}
                     <div className="relative" ref={dropdownRef}>

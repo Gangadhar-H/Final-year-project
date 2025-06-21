@@ -6,7 +6,7 @@ import Dashboard from './Dashboard';
 import Profile from './Profile';
 import StudentsPage from './StudentsPage';
 import StudentDetails from './StudentDetails';
-// import EditStudent from '../../components/office/EditStudent';
+import EditStudent from './EditStudent';
 import BulkUploadStudents from '../../components/office/BulkUploadStudents';
 import Unauthorized from '../Unauthorized';
 import { useAuth } from '../../context/AuthContext';
@@ -66,7 +66,7 @@ export default function Index() {
                     <Route index element={<StudentsPage />} />
                     <Route path="bulk-upload" element={<BulkUploadStudents />} />
                     <Route path=":studentId" element={<StudentDetails />} />
-                    {/* <Route path=":studentId/edit" element={<EditStudent />} /> */}
+                    <Route path=":studentId/edit" element={<EditStudent />} />
                 </Route>
 
                 {/* Unauthorized access */}

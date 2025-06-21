@@ -61,34 +61,6 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
             });
         }
 
-        if (user?.permissions?.certificateIssue) {
-            items.push({
-                name: 'Certificates',
-                href: '/office/certificates',
-                icon: (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                    </svg>
-                ),
-                permission: 'certificateIssue',
-                // badge: 'Cert'
-            });
-        }
-
-        if (user?.permissions?.noticeManagement) {
-            items.push({
-                name: 'Notices',
-                href: '/office/notices',
-                icon: (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-                    </svg>
-                ),
-                permission: 'noticeManagement',
-                // badge: 'Notice'
-            });
-        }
-
         if (user?.permissions?.reportGeneration) {
             items.push({
                 name: 'Reports',
@@ -134,21 +106,6 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
                     )}
                 </div>
             </div>
-
-            {/* User info section */}
-            {/* {!isCollapsed && (
-                <div className="p-4 border-b border-gray-200">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
-                            {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'OS'}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'Office Staff'}</p>
-                            <p className="text-xs text-gray-500 truncate">{user?.designation || 'Staff'}</p>
-                        </div>
-                    </div>
-                </div>
-            )} */}
 
             {/* Navigation */}
             <nav className="flex-1 p-4">
