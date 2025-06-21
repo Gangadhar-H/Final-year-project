@@ -92,6 +92,19 @@ router.route("/students").get(
     getAllStudents
 );
 
+// Bulk operations
+router.route("/students/bulk-upload").post(
+    verifyOfficeStaffJWT,
+    checkPermission('studentManagement'),
+    upload.single('excelFile'),
+    bulkAddStudents
+);
+
+router.route("/students/download-template").get(
+    verifyOfficeStaffJWT,
+    checkPermission('studentManagement'),
+    downloadStudentTemplate
+);
 router.route("/students/:id").get(
     verifyOfficeStaffJWT,
     checkPermission('studentManagement'),
@@ -108,20 +121,6 @@ router.route("/students/:id").delete(
     verifyOfficeStaffJWT,
     checkPermission('studentManagement'),
     deleteStudent
-);
-
-// Bulk operations
-router.route("/students/bulk-upload").post(
-    verifyOfficeStaffJWT,
-    checkPermission('studentManagement'),
-    upload.single('excelFile'),
-    bulkAddStudents
-);
-
-router.route("/students/download-template").get(
-    verifyOfficeStaffJWT,
-    checkPermission('studentManagement'),
-    downloadStudentTemplate
 );
 
 // Error handling middleware for multer

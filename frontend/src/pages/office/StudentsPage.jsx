@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import officeService from '../../services/officeService';
 import AddStudent from '../../components/office/AddStudent';
+import BulkUploadStudents from '../../components/office/BulkUploadStudents';
 
 const StudentsPage = () => {
     const navigate = useNavigate();
@@ -14,6 +15,7 @@ const StudentsPage = () => {
     const [searchLoading, setSearchLoading] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showBulkUpload, setShowBulkUpload] = useState(false);
 
     // Filters and pagination
     const [filters, setFilters] = useState({
@@ -165,7 +167,7 @@ const StudentsPage = () => {
                 </div>
                 <div className="flex space-x-3">
                     <Link
-                        to="/office/students/bulk-upload"
+                        to='/office/students/bulk-upload'
                         className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
                     >
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,6 +175,15 @@ const StudentsPage = () => {
                         </svg>
                         Bulk Upload
                     </Link>
+                    {/* <button
+                        onClick={() => setShowBulkUpload(true)}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                    >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        Bulk Upload
+                    </button> */}
                     <button
                         onClick={() => setShowAddModal(true)}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
@@ -402,8 +413,8 @@ const StudentsPage = () => {
                                                 key={pageNumber}
                                                 onClick={() => handlePageChange(pageNumber)}
                                                 className={`px-3 py-2 rounded-lg transition-colors ${pageNumber === pagination.currentPage
-                                                        ? 'bg-blue-600 text-white'
-                                                        : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                    ? 'bg-blue-600 text-white'
+                                                    : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
                                                     }`}
                                             >
                                                 {pageNumber}
@@ -439,6 +450,24 @@ const StudentsPage = () => {
                     </div>
                 </div>
             )}
+            {/* Bulk Upload Modal */}
+            {/* {showBulkUpload && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
+                        <div className="p-6">
+                            <BulkUploadStudents
+                                isModal={true}
+                                onSuccess={() => {
+                                    // Refresh students list
+                                    fetchStudents();
+                                    setShowBulkUpload(false);
+                                }}
+                                onCancel={() => setShowBulkUpload(false)}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}*/}
         </div>
     );
 };

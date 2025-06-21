@@ -6,9 +6,8 @@ import Dashboard from './Dashboard';
 import Profile from './Profile';
 import StudentsPage from './StudentsPage';
 // import StudentDetails from './StudentDetails';
-// import AddStudent from '../../components/office/AddStudent';
 // import EditStudent from '../../components/office/EditStudent';
-// import BulkUploadStudents from '../../components/office/BulkUploadStudents';
+import BulkUploadStudents from '../../components/office/BulkUploadStudents';
 import Unauthorized from '../Unauthorized';
 import { useAuth } from '../../context/AuthContext';
 import { useEffect } from 'react';
@@ -65,8 +64,7 @@ export default function Index() {
                 {/* Student Management Routes */}
                 <Route path="students">
                     <Route index element={<StudentsPage />} />
-                    {/* <Route path="add" element={<AddStudent />} /> */}
-                    {/* <Route path="bulk-upload" element={<BulkUploadStudents />} /> */}
+                    <Route path="bulk-upload" element={<BulkUploadStudents />} />
                     {/* <Route path=":studentId" element={<StudentDetails />} /> */}
                     {/* <Route path=":studentId/edit" element={<EditStudent />} /> */}
                 </Route>

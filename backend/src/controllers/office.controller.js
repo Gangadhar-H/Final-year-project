@@ -372,7 +372,7 @@ const downloadStudentTemplate = asyncHandler(async (req, res) => {
     }
 
     try {
-        // Create sample data for template
+        // Sample data
         const sampleData = [
             {
                 name: "John Doe",
@@ -393,22 +393,31 @@ const downloadStudentTemplate = asyncHandler(async (req, res) => {
         // Create workbook and worksheet
         const workbook = XLSX.utils.book_new();
         const worksheet = XLSX.utils.json_to_sheet(sampleData);
-
-        // Add worksheet to workbook
         XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
 
-        // Generate buffer
-        const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+        // Write workbook to binary string
+        const binaryString = XLSX.write(workbook, {
+            bookType: 'xlsx',
+            type: 'binary'
+        });
 
-        // Set response headers
-        res.setHeader('Content-Type',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition',
-            'attachment; filename="student_upload_template.xlsx"');
+        // Convert to buffer
+        const buffer = Buffer.from(binaryString, 'binary');
+
+        // Set headers
+        res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+        res.setHeader(
+            'Content-Disposition',
+            'attachment; filename="student_upload_template.xlsx"'
+        );
 
         return res.send(buffer);
 
     } catch (error) {
+        console.error('Error generating Excel file:', error);
         return res.status(500).json({
             message: "Error generating template",
             error: error.message
