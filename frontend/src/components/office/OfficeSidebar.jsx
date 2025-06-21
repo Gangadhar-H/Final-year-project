@@ -43,7 +43,7 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
                     </svg>
                 ),
                 permission: 'studentManagement',
-                badge: 'Student Mgmt'
+                // badge: 'Student Mgmt'
             });
         }
 
@@ -57,7 +57,7 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
                     </svg>
                 ),
                 permission: 'feeManagement',
-                badge: 'Fee'
+                // badge: 'Fee'
             });
         }
 
@@ -71,7 +71,7 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
                     </svg>
                 ),
                 permission: 'certificateIssue',
-                badge: 'Cert'
+                // badge: 'Cert'
             });
         }
 
@@ -85,7 +85,7 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
                     </svg>
                 ),
                 permission: 'noticeManagement',
-                badge: 'Notice'
+                // badge: 'Notice'
             });
         }
 
@@ -99,7 +99,7 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
                     </svg>
                 ),
                 permission: 'reportGeneration',
-                badge: 'Report'
+                // badge: 'Report'
             });
         }
 
@@ -136,7 +136,7 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
             </div>
 
             {/* User info section */}
-            {!isCollapsed && (
+            {/* {!isCollapsed && (
                 <div className="p-4 border-b border-gray-200">
                     <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
@@ -148,7 +148,7 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
                         </div>
                     </div>
                 </div>
-            )}
+            )} */}
 
             {/* Navigation */}
             <nav className="flex-1 p-4">

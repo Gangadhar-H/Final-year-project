@@ -5,7 +5,7 @@ import OfficeHeader from '../../components/office/OfficeHeader';
 import Dashboard from './Dashboard';
 import Profile from './Profile';
 import StudentsPage from './StudentsPage';
-// import StudentDetails from './StudentDetails';
+import StudentDetails from './StudentDetails';
 // import EditStudent from '../../components/office/EditStudent';
 import BulkUploadStudents from '../../components/office/BulkUploadStudents';
 import Unauthorized from '../Unauthorized';
@@ -65,7 +65,7 @@ export default function Index() {
                 <Route path="students">
                     <Route index element={<StudentsPage />} />
                     <Route path="bulk-upload" element={<BulkUploadStudents />} />
-                    {/* <Route path=":studentId" element={<StudentDetails />} /> */}
+                    <Route path=":studentId" element={<StudentDetails />} />
                     {/* <Route path=":studentId/edit" element={<EditStudent />} /> */}
                 </Route>
 
