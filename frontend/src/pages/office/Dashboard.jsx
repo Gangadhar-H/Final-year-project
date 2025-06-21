@@ -131,18 +131,6 @@ const Dashboard = () => {
             description: 'Handle student fee collections and records'
         },
         {
-            name: 'Certificate Issue',
-            key: 'certificateIssue',
-            icon: GraduationCap,
-            description: 'Issue certificates and academic documents'
-        },
-        {
-            name: 'Notice Management',
-            key: 'noticeManagement',
-            icon: Activity,
-            description: 'Create and manage official notices'
-        },
-        {
             name: 'Report Generation',
             key: 'reportGeneration',
             icon: TrendingUp,

@@ -61,8 +61,6 @@ const OfficeHeader = () => {
         const permissions = [];
         if (user.permissions.studentManagement) permissions.push('Student Mgmt');
         if (user.permissions.feeManagement) permissions.push('Fee Mgmt');
-        if (user.permissions.certificateIssue) permissions.push('Certificates');
-        if (user.permissions.noticeManagement) permissions.push('Notices');
         if (user.permissions.reportGeneration) permissions.push('Reports');
 
         return permissions;

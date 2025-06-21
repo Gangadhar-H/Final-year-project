@@ -33,8 +33,6 @@ const seedOfficeStaff = asyncHandler(async (req, res) => {
         permissions: permissions || {
             studentManagement: false,
             feeManagement: false,
-            certificateIssue: false,
-            noticeManagement: false,
             reportGeneration: false
         }
     });

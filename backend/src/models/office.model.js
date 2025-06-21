@@ -26,7 +26,7 @@ const officeStaffSchema = new Schema(
             required: true,
             enum: [
                 "Office Manager",
-                "Accounts Officer", 
+                "Accounts Officer",
                 "Admission Officer",
                 "Student Coordinator",
                 "Exam Officer",
@@ -43,14 +43,6 @@ const officeStaffSchema = new Schema(
                 type: Boolean,
                 default: false
             },
-            certificateIssue: {
-                type: Boolean,
-                default: false
-            },
-            noticeManagement: {
-                type: Boolean,
-                default: false
-            },
             reportGeneration: {
                 type: Boolean,
                 default: false
@@ -59,9 +51,9 @@ const officeStaffSchema = new Schema(
         refreshToken: {
             type: String
         }
-    }, 
-    { 
-        timestamps: true 
+    },
+    {
+        timestamps: true
     }
 );
 

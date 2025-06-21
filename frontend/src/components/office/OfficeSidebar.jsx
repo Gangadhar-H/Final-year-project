@@ -149,8 +149,6 @@ const OfficeSidebar = ({ isCollapsed = false }) => {
                             const permissionNames = {
                                 studentManagement: 'Students',
                                 feeManagement: 'Fees',
-                                certificateIssue: 'Certificates',
-                                noticeManagement: 'Notices',
                                 reportGeneration: 'Reports'
                             };
                             return (
