@@ -251,9 +251,8 @@ const downloadInternalMarksReport = asyncHandler(async (req, res) => {
 
         // Create Excel workbook
         const workbook = XLSX.utils.book_new();
-        const worksheet = XLSX.utils.json_to_sheet(reportData);
 
-        // Add title and info at the top
+        // Add title and info at the top (without creating the worksheet yet)
         const title = `Internal Marks Report - Semester ${semester.semesterNumber} - ${examType}`;
         const info = [
             [title],
@@ -262,9 +261,14 @@ const downloadInternalMarksReport = asyncHandler(async (req, res) => {
             [] // Empty row
         ];
 
-        // Insert title rows
-        XLSX.utils.sheet_add_aoa(worksheet, info, { origin: 'A1' });
-        XLSX.utils.sheet_add_json(worksheet, reportData, { origin: 'A5' });
+        // Create worksheet from the info first
+        const worksheet = XLSX.utils.aoa_to_sheet(info);
+
+        // Now add the JSON data starting from row 5, with headers
+        XLSX.utils.sheet_add_json(worksheet, reportData, {
+            origin: 'A5',
+            skipHeader: false // This ensures headers are added
+        });
 
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Internal Marks Report');
 
