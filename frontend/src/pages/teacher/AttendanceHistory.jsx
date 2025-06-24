@@ -469,10 +469,13 @@ const AttendanceHistory = () => {
                                                 Edit
                                             </button>
                                             <button
-                                                onClick={() => {
-                                                    // You can implement a detailed view modal here
-                                                    console.log('View details for:', record);
-                                                }}
+                                                onClick={() => navigate(`/teacher/mark-attendance/${record.subject._id}`, {
+                                                    state: {
+                                                        division: record.division,
+                                                        date: record.date,
+                                                        mode: 'edit'
+                                                    }
+                                                })}
                                                 className="text-gray-600 hover:text-gray-900"
                                             >
                                                 View
