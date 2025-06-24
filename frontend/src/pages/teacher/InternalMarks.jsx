@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getAssignedSubjects } from '../../services/teacherService';
+import { getAssignedSubjects, bulkDeleteInternalMarks } from '../../services/teacherService';
 import { getInternalMarks, updateInternalMarks, deleteInternalMarks } from '../../services/internalMarksService';
 
 function InternalMarks() {
@@ -28,6 +28,10 @@ function InternalMarks() {
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [deletingMark, setDeletingMark] = useState(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
+
+    const [bulkDeleteModalOpen, setBulkDeleteModalOpen] = useState(false);
+    const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false);
+
 
     const examTypes = ["Internal 1", "Internal 2", "Internal 3", "Assignment", "Quiz", "Project"];
 
@@ -286,6 +290,17 @@ function InternalMarks() {
                             {loading ? 'Searching...' : 'Search'}
                         </button>
                     </div>
+                    {selectedSubject && selectedDivision && selectedExamType && (
+                        <div className="mt-2 flex justify-end">
+                            <button
+                                onClick={() => setBulkDeleteModalOpen(true)}
+                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                            >
+                                Delete All Marks
+                            </button>
+                        </div>
+                    )}
+
                 </div>
 
                 {/* Add Marks Button */}
@@ -629,6 +644,64 @@ function InternalMarks() {
                     </div>
                 </div>
             )}
+            {/* Bulk delete */}
+            {bulkDeleteModalOpen && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                    <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                        <div className="text-center">
+                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                                <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Delete All Internal Marks</h3>
+                            <p className="text-sm text-gray-500 mb-4">
+                                This will delete all internal marks for:
+                                <br />
+                                <strong>Subject:</strong> {getSubjectDetails(selectedSubject)?.subjectId?.subjectName}<br />
+                                <strong>Division:</strong> {selectedDivision}<br />
+                                <strong>Exam Type:</strong> {selectedExamType}<br />
+                                <br />
+                                This action is <span className="text-red-600 font-semibold">permanent</span> and cannot be undone.
+                            </p>
+                            <div className="flex justify-end space-x-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setBulkDeleteModalOpen(false)}
+                                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        try {
+                                            setBulkDeleteLoading(true);
+                                            await bulkDeleteInternalMarks({
+                                                subjectId: selectedSubject,
+                                                division: selectedDivision,
+                                                examType: selectedExamType
+                                            });
+
+                                            setBulkDeleteModalOpen(false);
+                                            handleSearch();
+                                        } catch (error) {
+                                            setError("Failed to delete internal marks");
+                                        } finally {
+                                            setBulkDeleteLoading(false);
+                                        }
+                                    }}
+                                    disabled={bulkDeleteLoading}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                                >
+                                    {bulkDeleteLoading ? 'Deleting...' : 'Confirm Delete'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }

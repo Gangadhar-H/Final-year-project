@@ -545,6 +545,7 @@ const deleteInternalMarks = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "Internal mark record not found" });
     }
 
+    console.log("marks: ", mark);
     // Check if teacher is assigned to this subject and division
     const teacher = await Teacher.findById(req.user._id);
     const isAssigned = teacher.assignedSubjects.some(
@@ -564,6 +565,43 @@ const deleteInternalMarks = asyncHandler(async (req, res) => {
         message: "Internal mark deleted successfully"
     });
 });
+
+// Delete Internal marks in bulk
+// Bulk Delete Internal Marks
+const bulkDeleteInternalMarks = asyncHandler(async (req, res) => {
+    const { subjectId, division, examType } = req.body;
+
+    if (!subjectId || !division || !examType) {
+        return res.status(400).json({
+            message: "Subject ID, division, and exam type are required"
+        });
+    }
+
+    const teacher = await Teacher.findById(req.user._id);
+    const isAssigned = teacher.assignedSubjects.some(
+        assignment =>
+            assignment.subjectId.toString() === subjectId &&
+            assignment.division === division
+    );
+
+    if (!isAssigned) {
+        return res.status(403).json({
+            message: "You are not authorized to delete marks for this subject and division"
+        });
+    }
+
+    const result = await InternalMark.deleteMany({
+        subject: subjectId,
+        division,
+        examType
+    });
+
+    return res.status(200).json({
+        message: "Bulk internal marks deleted successfully",
+        deletedCount: result.deletedCount
+    });
+});
+
 
 // Get Student Performance Summary
 const getStudentPerformanceSummary = asyncHandler(async (req, res) => {
@@ -639,5 +677,6 @@ export {
     getInternalMarks,
     updateInternalMarks,
     deleteInternalMarks,
+    bulkDeleteInternalMarks,
     getStudentPerformanceSummary,
 }

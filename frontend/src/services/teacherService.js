@@ -154,6 +154,16 @@ export const getStudentsForMarks = (subjectId, division) =>
         params: { division }
     }).then(res => res.data);
 
+export const bulkDeleteInternalMarks = async ({ subjectId, division, examType }) => {
+    const response = await API.post('/teacher/internal-marks/bulk-delete', {
+        subjectId,
+        division,
+        examType
+    });
+    return response.data;
+};
+
+
 // Error Handling Wrapper
 export const handleApiError = (error) => {
     if (error.response) {

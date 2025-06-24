@@ -13,7 +13,8 @@ import {
     getInternalMarks,
     updateInternalMarks,
     deleteInternalMarks,
-    getStudentPerformanceSummary
+    getStudentPerformanceSummary,
+    bulkDeleteInternalMarks
 } from "../controllers/teacher.controller.js";
 import { verifyTeacherJWT } from "../middlewares/teacherAuth.js";
 
@@ -40,5 +41,7 @@ router.route("/subjects/:subjectId/internal-marks").get(verifyTeacherJWT, getInt
 router.route("/subjects/:subjectId/student-performance").get(verifyTeacherJWT, getStudentPerformanceSummary);
 router.route("/internal-marks/:markId").put(verifyTeacherJWT, updateInternalMarks);
 router.route("/internal-marks/:markId").delete(verifyTeacherJWT, deleteInternalMarks);
+router.route("/internal-marks/bulk-delete").post(verifyTeacherJWT, bulkDeleteInternalMarks);
+
 
 export default router;
