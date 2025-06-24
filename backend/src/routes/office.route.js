@@ -26,6 +26,11 @@ import {
 } from "../controllers/office.controller.js";
 
 import { verifyOfficeStaffJWT, checkPermission } from "../middlewares/officeStaffAuth.js";
+import {
+    getInternalMarksReport,
+    downloadInternalMarksReport,
+    getAvailableReports
+} from "../controllers/report.controller.js";
 
 const router = Router();
 
@@ -121,6 +126,27 @@ router.route("/students/:id").delete(
     verifyOfficeStaffJWT,
     checkPermission('studentManagement'),
     deleteStudent
+);
+
+
+
+// Report routes
+router.route("/reports/options").get(
+    verifyOfficeStaffJWT,
+    checkPermission('reportGeneration'),
+    getAvailableReports
+);
+
+router.route("/reports/internal-marks").get(
+    verifyOfficeStaffJWT,
+    checkPermission('reportGeneration'),
+    getInternalMarksReport
+);
+
+router.route("/reports/internal-marks/download").get(
+    verifyOfficeStaffJWT,
+    checkPermission('reportGeneration'),
+    downloadInternalMarksReport
 );
 
 // Error handling middleware for multer

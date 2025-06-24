@@ -18,7 +18,7 @@ const Login = () => {
         if (user && user.role === 'officeStaff') {
             navigate('/office/', { replace: true });
         }
-        if (user && user.role) {
+        else if (user && user.role) {
             navigate(`/${user.role}/`, { replace: true });
         }
     }, [user, navigate]);

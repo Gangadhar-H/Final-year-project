@@ -8,6 +8,7 @@ import StudentsPage from './StudentsPage';
 import StudentDetails from './StudentDetails';
 import EditStudent from './EditStudent';
 import BulkUploadStudents from '../../components/office/BulkUploadStudents';
+import ReportsPage from './ReportsPage';
 import Unauthorized from '../Unauthorized';
 import { useAuth } from '../../context/AuthContext';
 import { useEffect } from 'react';
@@ -60,6 +61,7 @@ export default function Index() {
 
                 {/* Profile */}
                 <Route path="profile" element={<Profile />} />
+                <Route path="reports" element={<ReportsPage />} />
 
                 {/* Student Management Routes */}
                 <Route path="students">
