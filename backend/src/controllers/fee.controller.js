@@ -7,7 +7,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import fs from 'fs';
 import path from 'path';
 
-// Admin Controllers
+// Office Staff Controllers
 export const createFeeStructure = asyncHandler(async (req, res) => {
     const { semesterId, academicYear, feeComponents, dueDate } = req.body;
 
