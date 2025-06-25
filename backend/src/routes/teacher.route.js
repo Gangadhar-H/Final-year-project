@@ -9,6 +9,7 @@ import {
     getStudentsForAttendance,
     getAttendance,
     markAttendance,
+    getStudentAttendanceReport,
     addInternalMarks,
     getInternalMarks,
     updateInternalMarks,
@@ -34,6 +35,7 @@ router.route("/logout").post(verifyTeacherJWT, logoutTeacher);
 router.route("/subjects/:subjectId/students").get(verifyTeacherJWT, getStudentsForAttendance);
 router.route("/subjects/:subjectId/attendance").get(verifyTeacherJWT, getAttendance);
 router.route("/subjects/:subjectId/attendance").post(verifyTeacherJWT, markAttendance);
+router.route("/subjects/:subjectId/attendance-report").get(verifyTeacherJWT, getStudentAttendanceReport);
 
 // Internal Marks routes
 router.route("/subjects/:subjectId/internal-marks").post(verifyTeacherJWT, addInternalMarks);

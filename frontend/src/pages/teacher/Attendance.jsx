@@ -382,7 +382,7 @@ const Attendance = () => {
                                 {/* Action Buttons */}
                                 <div className="flex gap-2 pt-4 border-t">
                                     <Link
-                                        to={`/teacher/attendance-history?subject=${subject.subjectId._id}&division=${subject.division}`}
+                                        to={`/teacher/student-attendance-report?subject=${subject.subjectId._id}&division=${subject.division}`}
                                         className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
                                     >
                                         <Clock className="h-4 w-4" />

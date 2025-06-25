@@ -148,6 +148,12 @@ export const formatAttendanceForDisplay = (attendanceRecords) => {
     }));
 };
 
+// Student Attendance Report Service
+export const getStudentAttendanceReport = (subjectId, division) =>
+    API.get(`/teacher/subjects/${subjectId}/attendance-report`, {
+        params: { division }
+    }).then(res => res.data);
+
 // Marks Services
 export const getStudentsForMarks = (subjectId, division) =>
     API.get(`/teacher/subjects/${subjectId}/students`, {

@@ -321,6 +321,110 @@ const getStudentsForAttendance = asyncHandler(async (req, res) => {
     });
 });
 
+// Get Student-wise Attendance Report
+const getStudentAttendanceReport = asyncHandler(async (req, res) => {
+    const { subjectId } = req.params;
+    const { division } = req.query;
+
+    if (!division) {
+        return res.status(400).json({ message: "Division is required" });
+    }
+
+    // Check if teacher is assigned to this subject and division
+    const teacher = await Teacher.findById(req.user._id);
+    const isAssigned = teacher.assignedSubjects.some(
+        assignment => assignment.subjectId.toString() === subjectId &&
+            assignment.division === division
+    );
+
+    if (!isAssigned) {
+        return res.status(403).json({
+            message: "You are not assigned to teach this subject in this division"
+        });
+    }
+
+    try {
+        // Get subject details
+        const subject = await Subject.findById(subjectId).populate('semester');
+        if (!subject) {
+            return res.status(404).json({ message: "Subject not found" });
+        }
+
+        // Get all students from the same semester and division
+        const students = await Student.find({
+            semester: subject.semester._id,
+            division: division
+        }).select('name uucmsNo email').sort({ name: 1 });
+
+        // Get all attendance records for this subject and division
+        const attendanceRecords = await Attendance.find({
+            subject: subjectId,
+            division: division
+        }).populate('attendanceRecords.student', 'name uucmsNo');
+
+        // Calculate attendance stats for each student
+        const studentAttendanceStats = students.map(student => {
+            let totalClasses = 0;
+            let classesAttended = 0;
+
+            attendanceRecords.forEach(record => {
+                const studentRecord = record.attendanceRecords.find(
+                    attendance => attendance.student._id.toString() === student._id.toString()
+                );
+
+                if (studentRecord) {
+                    totalClasses++;
+                    if (studentRecord.status === 'present') {
+                        classesAttended++;
+                    }
+                }
+            });
+
+            const attendancePercentage = totalClasses > 0
+                ? Math.round((classesAttended / totalClasses) * 100 * 100) / 100
+                : 0;
+
+            return {
+                student: {
+                    _id: student._id,
+                    name: student.name,
+                    uucmsNo: student.uucmsNo,
+                    email: student.email
+                },
+                totalClasses,
+                classesAttended,
+                classesAbsent: totalClasses - classesAttended,
+                attendancePercentage,
+                status: attendancePercentage >= 75 ? 'good' : attendancePercentage >= 60 ? 'average' : 'poor'
+            };
+        });
+
+        return res.status(200).json({
+            message: "Student attendance report generated successfully",
+            subject: {
+                _id: subject._id,
+                name: subject.subjectName,
+                code: subject.subjectCode,
+                semester: subject.semester.semesterNumber
+            },
+            division,
+            totalClasses: attendanceRecords.length,
+            studentStats: studentAttendanceStats,
+            overallStats: {
+                totalStudents: students.length,
+                averageAttendance: studentAttendanceStats.length > 0
+                    ? Math.round(studentAttendanceStats.reduce((sum, stat) => sum + stat.attendancePercentage, 0) / studentAttendanceStats.length * 100) / 100
+                    : 0,
+                studentsWithGoodAttendance: studentAttendanceStats.filter(stat => stat.attendancePercentage >= 75).length,
+                studentsWithPoorAttendance: studentAttendanceStats.filter(stat => stat.attendancePercentage < 60).length
+            }
+        });
+
+    } catch (error) {
+        throw error;
+    }
+});
+
 // Add Internal Marks for Students
 const addInternalMarks = asyncHandler(async (req, res) => {
     const { subjectId } = req.params;
@@ -673,6 +777,7 @@ export {
     markAttendance,
     getAttendance,
     getStudentsForAttendance,
+    getStudentAttendanceReport,
     addInternalMarks,
     getInternalMarks,
     updateInternalMarks,
