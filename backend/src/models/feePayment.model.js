@@ -55,8 +55,6 @@ const feePaymentSchema = new Schema({
     },
     receiptNumber: {
         type: String,
-        unique: true,
-        sparse: true // Only unique if not null
     },
     isActive: {
         type: Boolean,
@@ -77,6 +75,6 @@ feePaymentSchema.methods.generateReceiptNumber = function () {
 // Index for efficient querying
 feePaymentSchema.index({ student: 1, feeStructure: 1 });
 feePaymentSchema.index({ status: 1 });
-feePaymentSchema.index({ receiptNumber: 1 });
+feePaymentSchema.index({ receiptNumber: 1 }, { unique: true, sparse: true });
 
 export const FeePayment = mongoose.model("FeePayment", feePaymentSchema);
