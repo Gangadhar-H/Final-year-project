@@ -15,6 +15,7 @@ import AddStudent from '../../components/student/AddStudent';
 import StudentDetail from '../../components/student/StudentDetails';
 import AddTeacher from '../../components/teacher/AddTeacher';
 import TeacherDetail from '../../components/teacher/TeacherDetail';
+import FeeManagementPage from './FeeManagementPage';
 
 export default function Index() {
     return (
@@ -22,6 +23,7 @@ export default function Index() {
             <Route path="/" element={<AdminLayout />}>
                 <Route index element={<DashboardHome />} />
 
+                <Route path="fee-management" element={<FeeManagementPage />} />
                 {/* Semester Routes */}
                 <Route path="semesters">
                     <Route index element={<SemesterPage />} />

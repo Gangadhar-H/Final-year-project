@@ -7,7 +7,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import fs from 'fs';
 import path from 'path';
 
-// Office Staff Controllers
+// Admin Controllers
 export const createFeeStructure = asyncHandler(async (req, res) => {
     const { semesterId, academicYear, feeComponents, dueDate } = req.body;
 
@@ -24,11 +24,18 @@ export const createFeeStructure = asyncHandler(async (req, res) => {
         });
     }
 
+    // Calculate totalAmount from feeComponents
+    const totalAmount = Object.values(feeComponents).reduce(
+        (sum, fee) => sum + (parseFloat(fee) || 0),
+        0
+    );
+
     const feeStructure = new FeeStructure({
         semester: semesterId,
         academicYear,
         feeComponents,
-        dueDate: new Date(dueDate)
+        dueDate: new Date(dueDate),
+        totalAmount // ✅ Include this field
     });
 
     await feeStructure.save();
@@ -42,6 +49,7 @@ export const createFeeStructure = asyncHandler(async (req, res) => {
         data: populatedFeeStructure
     });
 });
+
 
 export const getAllFeeStructures = asyncHandler(async (req, res) => {
     const feeStructures = await FeeStructure.find({ isActive: true })
@@ -82,10 +90,8 @@ export const updateFeeStructure = asyncHandler(async (req, res) => {
 export const deleteFeeStructure = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const feeStructure = await FeeStructure.findByIdAndUpdate(
-        id,
-        { isActive: false },
-        { new: true }
+    const feeStructure = await FeeStructure.findByIdAndDelete(
+        id
     );
 
     if (!feeStructure) {

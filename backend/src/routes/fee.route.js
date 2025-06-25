@@ -13,6 +13,7 @@ import {
     getPaymentDetails,
     downloadReceipt
 } from "../controllers/fee.controller.js";
+import path from 'path';
 
 import { verifyAdminJWT } from "../middlewares/adminAuth.js";
 import { verifyStudentJWT } from "../middlewares/studentAuth.js";
