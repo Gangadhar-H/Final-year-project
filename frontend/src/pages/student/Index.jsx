@@ -9,6 +9,7 @@ import Subjects from './Subjects';
 import InternalMarks from './InternalMarks';
 import Attendance from './Attendance';
 import FeePaymentPage from './FeePaymentPage';
+import FeeReceiptsPage from './FeeReceiptPage';
 
 export default function StudentIndex() {
     const { user } = useAuth();
@@ -44,6 +45,7 @@ export default function StudentIndex() {
                         <Route path="internal-marks" element={<InternalMarks />} />
                         <Route path="attendance" element={<Attendance />} />
                         <Route path="fee-payment" element={<FeePaymentPage />} />
+                        <Route path="fee-receipts" element={<FeeReceiptsPage />} />
                         <Route path="unauthorized" element={<Unauthorized />} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
