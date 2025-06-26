@@ -295,6 +295,7 @@ export const getPaymentDetails = asyncHandler(async (req, res) => {
 });
 
 // Add this controller method to backend/src/controllers/fee.controller.js
+// Updated getPaymentHistory method in backend/src/controllers/fee.controller.js
 export const getPaymentHistory = asyncHandler(async (req, res) => {
     const studentId = req.user._id;
 
@@ -302,7 +303,14 @@ export const getPaymentHistory = asyncHandler(async (req, res) => {
         student: studentId,
         isActive: true
     })
-        .populate('feeStructure')
+        .populate({
+            path: 'student',
+            select: 'name uucmsNo email division semester',
+            populate: {
+                path: 'semester',
+                select: 'semesterNumber'
+            }
+        })
         .populate({
             path: 'feeStructure',
             populate: {

@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const app = express();
 
@@ -14,6 +17,13 @@ app.use(express.urlencoded({ extended: true, limit: "20kb" }));
 app.use(cookieParser());
 app.use(express.static("public"));
 
+// Get the directory name in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Routes
 import adminRouter from "./routes/admin.route.js";
 import teacherRouter from "./routes/teacher.route.js";
@@ -21,6 +31,7 @@ import questionPaperRouter from "./routes/questionPaper.route.js"
 import studentRouter from "./routes/student.route.js";
 import officeRouter from "./routes/office.route.js";
 import feeRouter from "./routes/fee.route.js";
+import { verifyOfficeStaffJWT } from "./middlewares/officeStaffAuth.js";
 
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/teacher", teacherRouter);
@@ -35,6 +46,19 @@ app.get("/", (req, res) => {
     });
 });
 
+// Secure route to serve payment proof files
+app.get('/api/v1/uploads/payment-proofs/:filename', verifyOfficeStaffJWT, (req, res) => {
+    const { filename } = req.params;
+    const filePath = path.join(process.cwd(), 'uploads', 'payment-proofs', filename);
+
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ message: 'File not found' });
+    }
+
+    // Send file
+    res.sendFile(filePath);
+});
 
 
 app.use((err, req, res, next) => {

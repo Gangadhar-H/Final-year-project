@@ -259,6 +259,7 @@ const FeeReceiptsPage = () => {
                 {showReceiptModal && selectedPayment && (
                     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" onClick={closeReceiptModal}>
                         <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-6xl shadow-lg rounded-md bg-white" onClick={(e) => e.stopPropagation()}>
+                            {console.log("receipt ref: ", receiptRef.current)}
                             <div className="mt-3">
                                 <ReceiptViewer
                                     ref={receiptRef}
@@ -266,6 +267,7 @@ const FeeReceiptsPage = () => {
                                     onClose={closeReceiptModal}
                                     showActions={true}
                                 />
+
                             </div>
                         </div>
                     </div>
