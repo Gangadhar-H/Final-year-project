@@ -11,7 +11,8 @@ import {
     getPendingPayments,
     verifyPayment,
     getPaymentDetails,
-    downloadReceipt
+    downloadReceipt,
+    getPaymentHistory
 } from "../controllers/fee.controller.js";
 import path from 'path';
 
@@ -61,6 +62,7 @@ router.route("/student/submit-payment").post(
     submitFeePayment
 );
 router.route("/student/receipt/:receiptNumber").get(verifyStudentJWT, downloadReceipt);
+router.route("/student/payment-history").get(verifyStudentJWT, getPaymentHistory);
 
 // ================== OFFICE STAFF ROUTES ==================
 router.route("/office/pending-payments").get(

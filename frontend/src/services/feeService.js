@@ -116,6 +116,16 @@ class FeeService {
         }
     }
 
+    // Add this method to frontend/src/services/feeService.js
+    async getPaymentHistory() {
+        try {
+            const response = await API.get('/fee/student/payment-history');
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || { message: 'Failed to fetch payment history' };
+        }
+    }
+
     // Verify payment
     async verifyPayment(paymentId, verificationData) {
         try {

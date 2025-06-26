@@ -294,6 +294,32 @@ export const getPaymentDetails = asyncHandler(async (req, res) => {
     });
 });
 
+// Add this controller method to backend/src/controllers/fee.controller.js
+export const getPaymentHistory = asyncHandler(async (req, res) => {
+    const studentId = req.user._id;
+
+    const payments = await FeePayment.find({
+        student: studentId,
+        isActive: true
+    })
+        .populate('feeStructure')
+        .populate({
+            path: 'feeStructure',
+            populate: {
+                path: 'semester',
+                select: 'semesterNumber'
+            }
+        })
+        .populate('verificationDetails.verifiedBy', 'name staffId')
+        .sort({ createdAt: -1 });
+
+    res.status(200).json({
+        message: "Payment history retrieved successfully",
+        success: true,
+        data: payments
+    });
+});
+
 // Download receipt
 export const downloadReceipt = asyncHandler(async (req, res) => {
     const { receiptNumber } = req.params;

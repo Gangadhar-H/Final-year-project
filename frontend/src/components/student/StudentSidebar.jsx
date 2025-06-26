@@ -7,7 +7,8 @@ import {
     TrendingUp,
     User,
     X,
-    GraduationCap
+    GraduationCap,
+    DollarSign
 } from 'lucide-react';
 
 const StudentSidebar = ({ isOpen, onClose }) => {
@@ -32,6 +33,11 @@ const StudentSidebar = ({ isOpen, onClose }) => {
             name: 'Internal Marks',
             href: '/student/internal-marks',
             icon: TrendingUp
+        },
+        {
+            name: 'Fee Payment',
+            href: '/student/fee-payment',
+            icon: DollarSign
         },
         {
             name: 'Profile',
