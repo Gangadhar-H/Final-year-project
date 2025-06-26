@@ -38,30 +38,62 @@ const ReceiptViewer = forwardRef(({ payment, onClose, showActions = true }, ref)
         window.print();
     };
 
-
-
     // Updated Download Function
     const handleDownload = () => {
+        console.log("Download clicked, ref:", ref);
+        console.log("Ref current:", ref?.current);
+
         if (!ref?.current) {
-            alert("Ref not attached. Please try again.");
+            alert("Unable to generate PDF. Please try again.");
             return;
         }
 
+        // Get receipt number safely
+        const receiptNumber = payment?.receiptNumber || 'student';
+
         const opt = {
             margin: 0.5,
-            filename: `receipt-${receiptNumber || 'student'}.pdf`,
+            filename: `receipt-${receiptNumber}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                scrollX: 0,
+                scrollY: 0
+            },
             jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
         };
 
-        html2pdf().set(opt).from(ref.current).save().catch((err) => {
-            alert("Failed to generate PDF. Please try again.");
-            console.error("PDF error:", err);
-        });
+        // Show loading state
+        const originalText = document.querySelector('.download-btn')?.textContent;
+        const downloadBtn = document.querySelector('.download-btn');
+        if (downloadBtn) {
+            downloadBtn.textContent = 'Generating PDF...';
+            downloadBtn.disabled = true;
+        }
 
+        console.log("Done till here");
+
+        html2pdf()
+            .set(opt)
+            .from(ref.current)
+            .save()
+            .then(() => {
+                console.log('PDF generated successfully');
+            })
+            .catch((err) => {
+                console.error("PDF generation error:", err);
+                alert("Failed to generate PDF. Please try again.");
+            })
+            .finally(() => {
+                // Restore button state
+                if (downloadBtn) {
+                    downloadBtn.textContent = originalText || 'Download';
+                    downloadBtn.disabled = false;
+                }
+            });
     };
-
 
     if (!payment) {
         return null;
@@ -87,7 +119,7 @@ const ReceiptViewer = forwardRef(({ payment, onClose, showActions = true }, ref)
                         </button>
                         <button
                             onClick={handleDownload}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            className="download-btn inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -289,8 +321,6 @@ const ReceiptViewer = forwardRef(({ payment, onClose, showActions = true }, ref)
                     <p className="text-sm text-gray-700">
                         <span className="font-semibold">Amount in Words:</span>
                         <span className="ml-2 capitalize font-medium">
-                            {/* This would need a number-to-words conversion function */}
-                            {/* For now, showing the amount */}
                             {formatCurrency(paymentDetails?.paidAmount)} Only
                         </span>
                     </p>
@@ -341,7 +371,7 @@ const ReceiptViewer = forwardRef(({ payment, onClose, showActions = true }, ref)
                         left: 0;
                         top: 0;
                         width: 100%;
-                        border: 1px solid black; /* ✅ Optional: adds border to printed receipt */
+                        border: 1px solid black;
                         padding: 1rem;
                     }
                     @page {
