@@ -7,6 +7,8 @@ const navItems = [
     { to: '/admin/subjects', label: 'Subjects' },
     { to: '/admin/students', label: 'Students' },
     { to: '/admin/teachers', label: 'Teachers' },
+    { to: '/admin/teachers', label: 'Office Staff' },
+    { to: '/admin/fee-management', label: 'Fees' },
     { to: '/admin/profile', label: 'Profile' },
 ];
 

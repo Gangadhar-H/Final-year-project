@@ -13,6 +13,7 @@ import Unauthorized from '../Unauthorized';
 import { useAuth } from '../../context/AuthContext';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import FeeVerificationPage from './FeeVerificationPage';
 
 // Layout component for office module
 const OfficeLayout = () => {
@@ -62,6 +63,7 @@ export default function Index() {
                 {/* Profile */}
                 <Route path="profile" element={<Profile />} />
                 <Route path="reports" element={<ReportsPage />} />
+                <Route path="fees" element={<FeeVerificationPage />} />
 
                 {/* Student Management Routes */}
                 <Route path="students">
