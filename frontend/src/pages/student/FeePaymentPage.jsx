@@ -74,6 +74,7 @@ const FeePaymentPage = () => {
     const handleRefresh = () => {
         fetchFeeDetails();
     };
+
     const handleViewReceipt = async (receiptNumber) => {
         try {
             const response = await feeService.downloadReceipt(receiptNumber);
@@ -162,36 +163,32 @@ const FeePaymentPage = () => {
                                 Manage your semester fee payment and view payment status
                             </p>
                         </div>
-                        <button
-                            onClick={() => {
-                                if (feeData?.paymentDetails?.receiptNumber) {
-                                    handleViewReceipt(feeData.paymentDetails.receiptNumber);
-                                } else {
-                                    navigate('/student/fee-receipts');
-                                }
-                            }}
-                            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                        >
-                            <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            View Receipts
-                        </button>
-                        <button
-                            onClick={handleRefresh}
-                            disabled={loading}
-                            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                        >
-                            <svg
-                                className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => navigate('/student/fee-receipts')}
+                                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                             >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Refresh
-                        </button>
+                                <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                View All Receipts
+                            </button>
+                            <button
+                                onClick={handleRefresh}
+                                disabled={loading}
+                                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                            >
+                                <svg
+                                    className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Refresh
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -202,6 +199,7 @@ const FeePaymentPage = () => {
                         paymentStatus={feeData?.paymentStatus}
                         paymentDetails={feeData?.paymentDetails}
                         onPayNow={handlePayNow}
+                        onViewReceipt={handleViewReceipt}
                     />
                 ) : (
                     <PaymentForm
