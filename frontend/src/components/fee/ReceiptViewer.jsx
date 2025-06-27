@@ -1,389 +1,475 @@
-import React, { forwardRef } from 'react';
-// @ts-ignore
-import html2pdf from 'html2pdf.js';
+import React, { useState, useRef } from 'react';
+import { toast } from 'react-hot-toast';
 
-const ReceiptViewer = forwardRef(({ payment, onClose, showActions = true }, ref) => {
-    // Format currency
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            minimumFractionDigits: 2
-        }).format(amount);
-    };
+const ReceiptViewer = ({ paymentDetails, onClose }) => {
+    const [isDownloading, setIsDownloading] = useState(false);
+    const receiptRef = useRef();
 
-    // Format date
-    const formatDate = (date) => {
-        return new Date(date).toLocaleDateString('en-IN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-    };
+    const downloadAsPDF = async () => {
+        setIsDownloading(true);
+        try {
+            // Import jsPDF dynamically
+            const { jsPDF } = await import('jspdf');
+            const doc = new jsPDF();
 
-    // Format date and time
-    const formatDateTime = (date) => {
-        return new Date(date).toLocaleString('en-IN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        });
-    };
+            // College Header
+            doc.setFontSize(20);
+            doc.setFont('helvetica', 'bold');
+            doc.text('COLLEGE NAME', 105, 20, { align: 'center' });
 
-    // Handle print
-    const handlePrint = () => {
-        window.print();
-    };
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.text('College Address, City, State - PIN', 105, 30, { align: 'center' });
+            doc.text('Phone: +91-XXXXXXXXXX | Email: info@college.edu', 105, 38, { align: 'center' });
 
-    // Updated Download Function
-    const handleDownload = () => {
-        console.log("Download clicked, ref:", ref);
-        console.log("Ref current:", ref?.current);
+            // Receipt Title
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('FEE PAYMENT RECEIPT', 105, 55, { align: 'center' });
 
-        if (!ref?.current) {
-            alert("Unable to generate PDF. Please try again.");
-            return;
-        }
+            // Draw line
+            doc.line(20, 60, 190, 60);
 
-        // Get receipt number safely
-        const receiptNumber = payment?.receiptNumber || 'student';
+            // Receipt Details
+            let yPos = 75;
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
 
-        const opt = {
-            margin: 0.5,
-            filename: `receipt-${receiptNumber}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: {
-                scale: 2,
-                useCORS: true,
-                allowTaint: true,
-                scrollX: 0,
-                scrollY: 0
-            },
-            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-        };
+            // Receipt Number and Date
+            doc.text(`Receipt No: ${paymentDetails.receiptNumber}`, 20, yPos);
+            doc.text(`Date: ${new Date(paymentDetails.verificationDetails?.verifiedAt).toLocaleDateString()}`, 140, yPos);
+            yPos += 15;
 
-        // Show loading state
-        const originalText = document.querySelector('.download-btn')?.textContent;
-        const downloadBtn = document.querySelector('.download-btn');
-        if (downloadBtn) {
-            downloadBtn.textContent = 'Generating PDF...';
-            downloadBtn.disabled = true;
-        }
+            // Student Details
+            doc.setFont('helvetica', 'bold');
+            doc.text('STUDENT DETAILS:', 20, yPos);
+            yPos += 8;
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Name: ${paymentDetails.student.name}`, 20, yPos);
+            yPos += 6;
+            doc.text(`UUCMS No: ${paymentDetails.student.uucmsNo}`, 20, yPos);
+            yPos += 6;
+            doc.text(`Email: ${paymentDetails.student.email}`, 20, yPos);
+            yPos += 6;
+            doc.text(`Semester: ${paymentDetails.student.semester?.semesterNumber}`, 20, yPos);
+            yPos += 6;
+            doc.text(`Division: ${paymentDetails.student.division}`, 20, yPos);
+            yPos += 15;
 
-        console.log("Done till here");
+            // Fee Details
+            doc.setFont('helvetica', 'bold');
+            doc.text('FEE DETAILS:', 20, yPos);
+            yPos += 8;
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Academic Year: ${paymentDetails.feeStructure.academicYear}`, 20, yPos);
+            yPos += 10;
 
-        html2pdf()
-            .set(opt)
-            .from(ref.current)
-            .save()
-            .then(() => {
-                console.log('PDF generated successfully');
-            })
-            .catch((err) => {
-                console.error("PDF generation error:", err);
-                alert("Failed to generate PDF. Please try again.");
-            })
-            .finally(() => {
-                // Restore button state
-                if (downloadBtn) {
-                    downloadBtn.textContent = originalText || 'Download';
-                    downloadBtn.disabled = false;
+            // Fee Components Table
+            const components = paymentDetails.feeStructure.feeComponents;
+            doc.text('Fee Components:', 20, yPos);
+            yPos += 8;
+
+            Object.entries(components).forEach(([key, value]) => {
+                if (value > 0) {
+                    const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                    doc.text(`${label}:`, 25, yPos);
+                    doc.text(`₹${value.toFixed(2)}`, 160, yPos);
+                    yPos += 6;
                 }
             });
+
+            // Draw line for total
+            doc.line(25, yPos + 2, 170, yPos + 2);
+            yPos += 8;
+            doc.setFont('helvetica', 'bold');
+            doc.text('Total Amount:', 25, yPos);
+            doc.text(`₹${paymentDetails.feeStructure.totalAmount.toFixed(2)}`, 160, yPos);
+            yPos += 15;
+
+            // Payment Details
+            doc.setFont('helvetica', 'bold');
+            doc.text('PAYMENT DETAILS:', 20, yPos);
+            yPos += 8;
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Payment Method: ${paymentDetails.paymentDetails.paymentMethod}`, 20, yPos);
+            yPos += 6;
+            doc.text(`Transaction ID: ${paymentDetails.paymentDetails.transactionId}`, 20, yPos);
+            yPos += 6;
+            doc.text(`Payment Date: ${new Date(paymentDetails.paymentDetails.paymentDate).toLocaleDateString()}`, 20, yPos);
+            yPos += 6;
+            doc.text(`Amount Paid: ₹${paymentDetails.paymentDetails.paidAmount.toFixed(2)}`, 20, yPos);
+            yPos += 15;
+
+            // Verification Details
+            if (paymentDetails.verificationDetails) {
+                doc.setFont('helvetica', 'bold');
+                doc.text('VERIFICATION DETAILS:', 20, yPos);
+                yPos += 8;
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Verified By: ${paymentDetails.verificationDetails.verifiedBy?.name || 'Office Staff'}`, 20, yPos);
+                yPos += 6;
+                doc.text(`Verified On: ${new Date(paymentDetails.verificationDetails.verifiedAt).toLocaleDateString()}`, 20, yPos);
+                if (paymentDetails.verificationDetails.remarks) {
+                    yPos += 6;
+                    doc.text(`Remarks: ${paymentDetails.verificationDetails.remarks}`, 20, yPos);
+                }
+            }
+
+            // Footer
+            yPos = 270;
+            doc.line(20, yPos, 190, yPos);
+            yPos += 10;
+            doc.setFontSize(8);
+            doc.text('This is a computer generated receipt and does not require signature.', 105, yPos, { align: 'center' });
+            doc.text('For any queries, please contact the accounts office.', 105, yPos + 5, { align: 'center' });
+
+            // Save PDF
+            doc.save(`Fee_Receipt_${paymentDetails.receiptNumber}.pdf`);
+            toast.success('Receipt downloaded successfully!');
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            toast.error('Failed to download receipt');
+        } finally {
+            setIsDownloading(false);
+        }
     };
 
-    if (!payment) {
-        return null;
-    }
+    const downloadAsImage = () => {
+        setIsDownloading(true);
+        try {
+            // Create canvas
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 800;
+            canvas.height = 1000;
 
-    const { student, feeStructure, paymentDetails, receiptNumber, verificationDetails } = payment;
+            // White background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    return (
-        <div className="bg-white">
-            {/* Header with actions */}
-            {showActions && (
-                <div className="flex justify-between items-center p-4 border-b print:hidden">
-                    <h2 className="text-xl font-semibold text-gray-900">Fee Receipt</h2>
-                    <div className="flex space-x-3">
-                        <button
-                            onClick={handlePrint}
-                            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                            <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                            </svg>
-                            Print
-                        </button>
-                        <button
-                            onClick={handleDownload}
-                            className="download-btn inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Download
-                        </button>
+            // Set default font
+            ctx.fillStyle = '#000000';
+            ctx.textAlign = 'left';
+
+            let yPos = 40;
+
+            // College Header
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('COLLEGE NAME', canvas.width / 2, yPos);
+            yPos += 25;
+
+            ctx.font = '14px Arial';
+            ctx.fillText('College Address, City, State - PIN', canvas.width / 2, yPos);
+            yPos += 18;
+            ctx.fillText('Phone: +91-XXXXXXXXXX | Email: info@college.edu', canvas.width / 2, yPos);
+            yPos += 35;
+
+            // Receipt Title
+            ctx.font = 'bold 20px Arial';
+            ctx.fillText('FEE PAYMENT RECEIPT', canvas.width / 2, yPos);
+            yPos += 25;
+
+            // Draw line
+            ctx.beginPath();
+            ctx.moveTo(50, yPos);
+            ctx.lineTo(canvas.width - 50, yPos);
+            ctx.stroke();
+            yPos += 25;
+
+            // Receipt details
+            ctx.textAlign = 'left';
+            ctx.font = '12px Arial';
+
+            // Receipt Number and Date
+            ctx.fillText(`Receipt No: ${paymentDetails.receiptNumber}`, 50, yPos);
+            ctx.fillText(`Date: ${new Date(paymentDetails.verificationDetails?.verifiedAt).toLocaleDateString()}`, 550, yPos);
+            yPos += 25;
+
+            // Student Details
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('STUDENT DETAILS:', 50, yPos);
+            yPos += 20;
+            ctx.font = '12px Arial';
+            ctx.fillText(`Name: ${paymentDetails.student.name}`, 50, yPos);
+            yPos += 18;
+            ctx.fillText(`UUCMS No: ${paymentDetails.student.uucmsNo}`, 50, yPos);
+            yPos += 18;
+            ctx.fillText(`Email: ${paymentDetails.student.email}`, 50, yPos);
+            yPos += 18;
+            ctx.fillText(`Semester: ${paymentDetails.student.semester?.semesterNumber}`, 50, yPos);
+            yPos += 18;
+            ctx.fillText(`Division: ${paymentDetails.student.division}`, 50, yPos);
+            yPos += 30;
+
+            // Fee Details
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('FEE DETAILS:', 50, yPos);
+            yPos += 20;
+            ctx.font = '12px Arial';
+            ctx.fillText(`Academic Year: ${paymentDetails.feeStructure.academicYear}`, 50, yPos);
+            yPos += 25;
+
+            // Fee Components
+            ctx.fillText('Fee Components:', 50, yPos);
+            yPos += 20;
+
+            const components = paymentDetails.feeStructure.feeComponents;
+            Object.entries(components).forEach(([key, value]) => {
+                if (value > 0) {
+                    const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                    ctx.fillText(`${label}:`, 70, yPos);
+                    ctx.fillText(`₹${value.toFixed(2)}`, 600, yPos);
+                    yPos += 18;
+                }
+            });
+
+            // Draw line for total
+            ctx.beginPath();
+            ctx.moveTo(70, yPos + 5);
+            ctx.lineTo(650, yPos + 5);
+            ctx.stroke();
+            yPos += 20;
+
+            ctx.font = 'bold 12px Arial';
+            ctx.fillText('Total Amount:', 70, yPos);
+            ctx.fillText(`₹${paymentDetails.feeStructure.totalAmount.toFixed(2)}`, 600, yPos);
+            yPos += 30;
+
+            // Payment Details
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('PAYMENT DETAILS:', 50, yPos);
+            yPos += 20;
+            ctx.font = '12px Arial';
+            ctx.fillText(`Payment Method: ${paymentDetails.paymentDetails.paymentMethod}`, 50, yPos);
+            yPos += 18;
+            ctx.fillText(`Transaction ID: ${paymentDetails.paymentDetails.transactionId}`, 50, yPos);
+            yPos += 18;
+            ctx.fillText(`Payment Date: ${new Date(paymentDetails.paymentDetails.paymentDate).toLocaleDateString()}`, 50, yPos);
+            yPos += 18;
+            ctx.fillText(`Amount Paid: ₹${paymentDetails.paymentDetails.paidAmount.toFixed(2)}`, 50, yPos);
+            yPos += 30;
+
+            // Verification Details
+            if (paymentDetails.verificationDetails) {
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText('VERIFICATION DETAILS:', 50, yPos);
+                yPos += 20;
+                ctx.font = '12px Arial';
+                ctx.fillText(`Verified By: ${paymentDetails.verificationDetails.verifiedBy?.name || 'Office Staff'}`, 50, yPos);
+                yPos += 18;
+                ctx.fillText(`Verified On: ${new Date(paymentDetails.verificationDetails.verifiedAt).toLocaleDateString()}`, 50, yPos);
+                if (paymentDetails.verificationDetails.remarks) {
+                    yPos += 18;
+                    ctx.fillText(`Remarks: ${paymentDetails.verificationDetails.remarks}`, 50, yPos);
+                }
+            }
+
+            // Footer
+            yPos = canvas.height - 50;
+            ctx.beginPath();
+            ctx.moveTo(50, yPos - 20);
+            ctx.lineTo(canvas.width - 50, yPos - 20);
+            ctx.stroke();
+
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('This is a computer generated receipt and does not require signature.', canvas.width / 2, yPos);
+            ctx.fillText('For any queries, please contact the accounts office.', canvas.width / 2, yPos + 15);
+
+            // Download image
+            const link = document.createElement('a');
+            link.download = `Fee_Receipt_${paymentDetails.receiptNumber}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+
+            toast.success('Receipt downloaded successfully!');
+        } catch (error) {
+            console.error('Error generating image:', error);
+            toast.error('Failed to download receipt');
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+    if (!paymentDetails) {
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                    <div className="text-center">
+                        <p className="text-gray-600">No payment details available</p>
                         <button
                             onClick={onClose}
-                            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                            className="mt-4 px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
                         >
-                            <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
                             Close
                         </button>
                     </div>
                 </div>
-            )}
+            </div>
+        );
+    }
 
-            {/* Receipt Content */}
-            <div ref={ref} id="receipt-content" className="receipt-content max-w-4xl mx-auto p-8 bg-white border border-gray-800">
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                {/* Header */}
+                <div className="flex justify-between items-center p-6 border-b">
+                    <h2 className="text-xl font-semibold text-gray-900">Fee Payment Receipt</h2>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-400 hover:text-gray-600"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
 
-                {/* College Header */}
-                <div className="text-center mb-8 border-b-2 border-gray-900 pb-6">
-                    <div className="mb-4">
-                        <div className="w-20 h-20 mx-auto mb-4 bg-blue-600 rounded-full flex items-center justify-center">
-                            <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                {/* Receipt Content */}
+                <div ref={receiptRef} className="p-8 bg-white">
+                    {/* College Header */}
+                    <div className="text-center mb-8">
+                        <h1 className="text-2xl font-bold text-gray-900 mb-2">COLLEGE NAME</h1>
+                        <p className="text-sm text-gray-600">College Address, City, State - PIN</p>
+                        <p className="text-sm text-gray-600">Phone: +91-XXXXXXXXXX | Email: info@college.edu</p>
+                    </div>
+
+                    {/* Receipt Title */}
+                    <div className="text-center mb-6">
+                        <h2 className="text-xl font-bold text-gray-900 border-b-2 border-gray-300 pb-2">
+                            FEE PAYMENT RECEIPT
+                        </h2>
+                    </div>
+
+                    {/* Receipt Info */}
+                    <div className="flex justify-between mb-6">
+                        <div>
+                            <p className="text-sm"><strong>Receipt No:</strong> {paymentDetails.receiptNumber}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm"><strong>Date:</strong> {new Date(paymentDetails.verificationDetails?.verifiedAt).toLocaleDateString()}</p>
+                        </div>
+                    </div>
+
+                    {/* Student Details */}
+                    <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-3 text-gray-900">STUDENT DETAILS:</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                            <p><strong>Name:</strong> {paymentDetails.student.name}</p>
+                            <p><strong>UUCMS No:</strong> {paymentDetails.student.uucmsNo}</p>
+                            <p><strong>Email:</strong> {paymentDetails.student.email}</p>
+                            <p><strong>Semester:</strong> {paymentDetails.student.semester?.semesterNumber}</p>
+                            <p><strong>Division:</strong> {paymentDetails.student.division}</p>
+                        </div>
+                    </div>
+
+                    {/* Fee Details */}
+                    <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-3 text-gray-900">FEE DETAILS:</h3>
+                        <p className="text-sm mb-3"><strong>Academic Year:</strong> {paymentDetails.feeStructure.academicYear}</p>
+
+                        <div className="border border-gray-300">
+                            <div className="bg-gray-50 px-4 py-2 border-b">
+                                <p className="font-semibold">Fee Components:</p>
+                            </div>
+                            <div className="p-4">
+                                {Object.entries(paymentDetails.feeStructure.feeComponents).map(([key, value]) => (
+                                    value > 0 && (
+                                        <div key={key} className="flex justify-between py-1 text-sm">
+                                            <span>{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:</span>
+                                            <span>₹{value.toFixed(2)}</span>
+                                        </div>
+                                    )
+                                ))}
+                                <div className="border-t pt-2 mt-2">
+                                    <div className="flex justify-between font-semibold">
+                                        <span>Total Amount:</span>
+                                        <span>₹{paymentDetails.feeStructure.totalAmount.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Payment Details */}
+                    <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-3 text-gray-900">PAYMENT DETAILS:</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                            <p><strong>Payment Method:</strong> {paymentDetails.paymentDetails.paymentMethod}</p>
+                            <p><strong>Transaction ID:</strong> {paymentDetails.paymentDetails.transactionId}</p>
+                            <p><strong>Payment Date:</strong> {new Date(paymentDetails.paymentDetails.paymentDate).toLocaleDateString()}</p>
+                            <p><strong>Amount Paid:</strong> ₹{paymentDetails.paymentDetails.paidAmount.toFixed(2)}</p>
+                        </div>
+                    </div>
+
+                    {/* Verification Details */}
+                    {paymentDetails.verificationDetails && (
+                        <div className="mb-6">
+                            <h3 className="text-lg font-semibold mb-3 text-gray-900">VERIFICATION DETAILS:</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                                <p><strong>Verified By:</strong> {paymentDetails.verificationDetails.verifiedBy?.name || 'Office Staff'}</p>
+                                <p><strong>Verified On:</strong> {new Date(paymentDetails.verificationDetails.verifiedAt).toLocaleDateString()}</p>
+                                {paymentDetails.verificationDetails.remarks && (
+                                    <p className="col-span-2"><strong>Remarks:</strong> {paymentDetails.verificationDetails.remarks}</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Footer */}
+                    <div className="border-t pt-4 mt-8 text-center text-xs text-gray-600">
+                        <p>This is a computer generated receipt and does not require signature.</p>
+                        <p>For any queries, please contact the accounts office.</p>
+                    </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-center gap-4 p-6 border-t bg-gray-50">
+                    <button
+                        onClick={downloadAsPDF}
+                        disabled={isDownloading}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                    >
+                        {isDownloading ? (
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                        </div>
-                    </div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                        UNIVERSITY COLLEGE OF COMPUTER & MANAGEMENT STUDIES
-                    </h1>
-                    <p className="text-gray-600 mb-2">
-                        Affiliated to University of Mumbai
-                    </p>
-                    <p className="text-gray-600 text-sm mb-4">
-                        Address: College Campus, Mumbai - 400001 | Phone: +91-22-1234567 | Email: info@uucms.edu.in
-                    </p>
-                    <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full font-semibold">
-                        FEE PAYMENT RECEIPT
-                    </div>
-                </div>
-
-                {/* Receipt Details Header */}
-                <div className="grid grid-cols-2 gap-6 mb-8">
-                    <div className="space-y-2">
-                        <div className="flex">
-                            <span className="font-semibold text-gray-700 w-32">Receipt No:</span>
-                            <span className="text-gray-900 font-mono text-lg">{receiptNumber}</span>
-                        </div>
-                        <div className="flex">
-                            <span className="font-semibold text-gray-700 w-32">Date:</span>
-                            <span className="text-gray-900">{formatDate(verificationDetails?.verifiedAt)}</span>
-                        </div>
-                        <div className="flex">
-                            <span className="font-semibold text-gray-700 w-32">Academic Year:</span>
-                            <span className="text-gray-900">{feeStructure?.academicYear}</span>
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <div className="flex">
-                            <span className="font-semibold text-gray-700 w-32">Payment Mode:</span>
-                            <span className="text-gray-900">{paymentDetails?.paymentMethod}</span>
-                        </div>
-                        <div className="flex">
-                            <span className="font-semibold text-gray-700 w-32">Transaction ID:</span>
-                            <span className="text-gray-900 font-mono">{paymentDetails?.transactionId}</span>
-                        </div>
-                        <div className="flex">
-                            <span className="font-semibold text-gray-700 w-32">Payment Date:</span>
-                            <span className="text-gray-900">{formatDate(paymentDetails?.paymentDate)}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Student Details */}
-                <div className="bg-gray-50 p-6 rounded-lg mb-8">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-300 pb-2">
-                        Student Information
-                    </h3>
-                    <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-3">
-                            <div className="flex">
-                                <span className="font-semibold text-gray-700 w-36">Student Name:</span>
-                                <span className="text-gray-900 font-medium">{student?.name}</span>
-                            </div>
-                            <div className="flex">
-                                <span className="font-semibold text-gray-700 w-36">UUCMS No:</span>
-                                <span className="text-gray-900 font-mono">{student?.uucmsNo}</span>
-                            </div>
-                        </div>
-                        <div className="space-y-3">
-                            <div className="flex">
-                                <span className="font-semibold text-gray-700 w-36">Course:</span>
-                                <span className="text-gray-900">BCA</span>
-                            </div>
-                            <div className="flex">
-                                <span className="font-semibold text-gray-700 w-36">Semester:</span>
-                                <span className="text-gray-900">{feeStructure?.semester?.semesterNumber}</span>
-                            </div>
-                            <div className="flex">
-                                <span className="font-semibold text-gray-700 w-36">Division:</span>
-                                <span className="text-gray-900">{student?.division}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Fee Breakdown */}
-                <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-300 pb-2">
-                        Fee Breakdown
-                    </h3>
-                    <div className="overflow-hidden border border-gray-300 rounded-lg">
-                        <table className="min-w-full divide-y divide-gray-300">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Fee Component
-                                    </th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Amount
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {feeStructure?.feeComponents && Object.entries(feeStructure.feeComponents).map(([key, value]) => {
-                                    if (value > 0) {
-                                        const componentName = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                                        return (
-                                            <tr key={key}>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {componentName}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono">
-                                                    {formatCurrency(value)}
-                                                </td>
-                                            </tr>
-                                        );
-                                    }
-                                    return null;
-                                })}
-                                <tr className="bg-gray-50 font-semibold">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-t-2 border-gray-300">
-                                        Total Amount
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-mono border-t-2 border-gray-300">
-                                        {formatCurrency(feeStructure?.totalAmount)}
-                                    </td>
-                                </tr>
-                                <tr className="bg-green-50 font-bold text-green-800">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                        Amount Paid
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono">
-                                        {formatCurrency(paymentDetails?.paidAmount)}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* Payment Status */}
-                <div className="mb-8">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <h3 className="text-lg font-semibold text-green-800">Payment Verified & Approved</h3>
-                                <p className="text-green-700 text-sm mt-1">
-                                    Your fee payment has been successfully verified and approved by the office.
-                                </p>
-                                {verificationDetails?.verifiedAt && (
-                                    <p className="text-green-600 text-sm mt-1">
-                                        Verified on: {formatDateTime(verificationDetails.verifiedAt)}
-                                    </p>
-                                )}
-                                {verificationDetails?.remarks && (
-                                    <p className="text-green-600 text-sm mt-2">
-                                        <span className="font-medium">Remarks:</span> {verificationDetails.remarks}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Amount in Words */}
-                <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-700">
-                        <span className="font-semibold">Amount in Words:</span>
-                        <span className="ml-2 capitalize font-medium">
-                            {formatCurrency(paymentDetails?.paidAmount)} Only
-                        </span>
-                    </p>
-                </div>
-
-                {/* Footer */}
-                <div className="border-t-2 border-gray-900 pt-6">
-                    <div className="grid grid-cols-2 gap-8">
-                        <div className="text-center">
-                            <div className="border-b border-gray-400 w-48 mx-auto mb-2"></div>
-                            <p className="text-sm text-gray-600">Student Signature</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="border-b border-gray-400 w-48 mx-auto mb-2"></div>
-                            <p className="text-sm text-gray-600">Authorized Signature</p>
-                            <p className="text-xs text-gray-500 mt-1">Office Staff</p>
-                        </div>
-                    </div>
-
-                    <div className="text-center mt-8 pt-4 border-t border-gray-300">
-                        <p className="text-xs text-gray-500">
-                            This is a computer generated receipt and does not require physical signature.
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                            For any queries, please contact the college office or email us at fees@uucms.edu.in
-                        </p>
-                        <p className="text-xs text-gray-400 mt-2">
-                            Generated on: {formatDateTime(new Date())}
-                        </p>
-                    </div>
+                        ) : (
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        )}
+                        Download PDF
+                    </button>
+                    <button
+                        onClick={downloadAsImage}
+                        disabled={isDownloading}
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                    >
+                        {isDownloading ? (
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        ) : (
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        )}
+                        Download Image
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                    >
+                        Close
+                    </button>
                 </div>
             </div>
-
-            {/* Print Styles */}
-            <style>{`
-                @media print {
-                    body * {
-                        visibility: hidden;
-                    }
-                    .print\\:hidden {
-                        display: none !important;
-                    }
-                    .receipt-content, .receipt-content * {
-                        visibility: visible;
-                    }
-                    .receipt-content {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 100%;
-                        border: 1px solid black;
-                        padding: 1rem;
-                    }
-                    @page {
-                        margin: 1cm;
-                        size: A4;
-                    }
-                }
-            `}</style>
         </div>
     );
-});
-
-ReceiptViewer.displayName = 'ReceiptViewer';
+};
 
 export default ReceiptViewer;

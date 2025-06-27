@@ -1,7 +1,15 @@
 // frontend/src/components/fee/PaymentCard.jsx
 import React from 'react';
+import ReceiptViewer from '../../components/fee/ReceiptViewer';
+import feeService from '../../services/feeService';
+import { useState, useEffect } from 'react';
 
 const PaymentCard = ({ feeStructure, paymentStatus, paymentDetails, onPayNow }) => {
+
+    const [showReceiptViewer, setShowReceiptViewer] = useState(false);
+    const [selectedReceipt, setSelectedReceipt] = useState(null);
+
+    const [feeData, setFeeData] = useState(null);
     const getStatusColor = (status) => {
         switch (status) {
             case 'approved':
@@ -41,6 +49,38 @@ const PaymentCard = ({ feeStructure, paymentStatus, paymentDetails, onPayNow }) 
             style: 'currency',
             currency: 'INR'
         }).format(amount);
+    };
+    const handleViewReceipt = async (receiptNumber) => {
+        try {
+            const response = await feeService.downloadReceipt(receiptNumber);
+            if (response.success) {
+                setSelectedReceipt(response.data);
+                setShowReceiptViewer(true);
+            } else {
+                toast.error('Failed to load receipt details');
+            }
+        } catch (error) {
+            console.error('Error loading receipt:', error);
+            toast.error('Failed to load receipt details');
+        }
+    };
+    useEffect(() => {
+        fetchFeeDetails();
+    }, []);
+
+    const fetchFeeDetails = async () => {
+        try {
+            const response = await feeService.getStudentFeeDetails();
+
+            if (response.success) {
+                setFeeData(response.data);
+            } else {
+                toast.error('Failed to load fee details');
+            }
+        } catch (err) {
+            console.error('Error fetching fee details:', err);
+            toast.error('Failed to load fee details');
+        }
     };
 
     if (!feeStructure) {
@@ -137,13 +177,21 @@ const PaymentCard = ({ feeStructure, paymentStatus, paymentDetails, onPayNow }) 
 
                 {paymentStatus === 'approved' && paymentDetails?.receiptNumber && (
                     <button
-                        onClick={() => window.open(`/fee/student/receipt/${paymentDetails.receiptNumber}`, '_blank')}
-                        className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                        onClick={() => {
+                            if (feeData?.paymentDetails?.receiptNumber) {
+                                handleViewReceipt(feeData.paymentDetails.receiptNumber);
+                            } else {
+                                navigate('/student/fee-receipts');
+                            }
+                        }}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                     >
-                        Download Receipt
+                        <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        View Receipts
                     </button>
                 )}
-
                 {paymentStatus === 'rejected' && (
                     <div className="text-red-600 text-sm">
                         <p>Payment was rejected. Please contact the office for more details.</p>

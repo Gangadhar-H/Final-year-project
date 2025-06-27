@@ -5,6 +5,7 @@ import PaymentCard from '../../components/fee/PaymentCard';
 import PaymentForm from '../../components/fee/PaymentForm';
 import feeService from '../../services/feeService';
 import { useNavigate } from 'react-router-dom';
+import ReceiptViewer from '../../components/fee/ReceiptViewer';
 
 const FeePaymentPage = () => {
     const navigate = useNavigate();
@@ -13,6 +14,8 @@ const FeePaymentPage = () => {
     const [error, setError] = useState(null);
     const [showPaymentForm, setShowPaymentForm] = useState(false);
     const [submittingPayment, setSubmittingPayment] = useState(false);
+    const [showReceiptViewer, setShowReceiptViewer] = useState(false);
+    const [selectedReceipt, setSelectedReceipt] = useState(null);
 
     // Fetch fee details on component mount
     useEffect(() => {
@@ -70,6 +73,20 @@ const FeePaymentPage = () => {
 
     const handleRefresh = () => {
         fetchFeeDetails();
+    };
+    const handleViewReceipt = async (receiptNumber) => {
+        try {
+            const response = await feeService.downloadReceipt(receiptNumber);
+            if (response.success) {
+                setSelectedReceipt(response.data);
+                setShowReceiptViewer(true);
+            } else {
+                toast.error('Failed to load receipt details');
+            }
+        } catch (error) {
+            console.error('Error loading receipt:', error);
+            toast.error('Failed to load receipt details');
+        }
     };
 
     // Loading state
@@ -146,7 +163,13 @@ const FeePaymentPage = () => {
                             </p>
                         </div>
                         <button
-                            onClick={() => navigate('/student/fee-receipts')}
+                            onClick={() => {
+                                if (feeData?.paymentDetails?.receiptNumber) {
+                                    handleViewReceipt(feeData.paymentDetails.receiptNumber);
+                                } else {
+                                    navigate('/student/fee-receipts');
+                                }
+                            }}
                             className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                         >
                             <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -234,6 +257,17 @@ const FeePaymentPage = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Receipt Viewer Modal */}
+                {showReceiptViewer && (
+                    <ReceiptViewer
+                        paymentDetails={selectedReceipt}
+                        onClose={() => {
+                            setShowReceiptViewer(false);
+                            setSelectedReceipt(null);
+                        }}
+                    />
+                )}
             </div>
         </div>
     );
