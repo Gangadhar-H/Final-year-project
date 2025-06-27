@@ -6,6 +6,7 @@ import SubjectPage from './SubjectPage';
 import StudentPage from './StudentPage';
 import TeacherAssignPage from './TeacherAssignPage';
 import ProfilePage from './ProfilePage';
+import OfficeStaffPage from './OfficeStaffPage';
 import Unauthorized from '../Unauthorized';
 import AddSemester from '../../components/semester/AddSemester';
 import SemesterDetail from '../../components/semester/SemesterDetail';
@@ -15,6 +16,7 @@ import AddStudent from '../../components/student/AddStudent';
 import StudentDetail from '../../components/student/StudentDetails';
 import AddTeacher from '../../components/teacher/AddTeacher';
 import TeacherDetail from '../../components/teacher/TeacherDetail';
+import AddOfficeStaff from '../../components/office/AddOfficeStaff';
 import FeeManagementPage from './FeeManagementPage';
 
 export default function Index() {
@@ -24,6 +26,7 @@ export default function Index() {
                 <Route index element={<DashboardHome />} />
 
                 <Route path="fee-management" element={<FeeManagementPage />} />
+
                 {/* Semester Routes */}
                 <Route path="semesters">
                     <Route index element={<SemesterPage />} />
@@ -50,6 +53,12 @@ export default function Index() {
                     <Route index element={<TeacherAssignPage />} />
                     <Route path="add" element={<AddTeacher />} />
                     <Route path=":id" element={<TeacherDetail />} />
+                </Route>
+
+                {/* Office Staff Routes */}
+                <Route path="office-staff">
+                    <Route index element={<OfficeStaffPage />} />
+                    <Route path="add" element={<AddOfficeStaff />} />
                 </Route>
 
                 <Route path="profile" element={<ProfilePage />} />

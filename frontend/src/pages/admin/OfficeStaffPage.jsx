@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import OfficeStaffList from '../../components/office-staff/OfficeStaffList';
+import OfficeStaffList from '../../components/office/OfficeStaffList';
 
 export default function OfficeStaffPage() {
     return (
