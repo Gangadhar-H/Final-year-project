@@ -111,8 +111,8 @@ const FeeManagementPage = () => {
         <button
             onClick={() => onClick(tab)}
             className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
         >
             {label}
@@ -234,55 +234,6 @@ const FeeManagementPage = () => {
                     )}
                 </div>
 
-                {/* Quick Actions */}
-                {activeTab === 'list' && (
-                    <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
-                                <div className="flex items-center space-x-3">
-                                    <div className="p-2 bg-blue-100 rounded-full">
-                                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium text-gray-900">Payment Reports</h4>
-                                        <p className="text-sm text-gray-500">View payment analytics</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="p-4 border border-gray-200 rounded-lg hover:border-green-300 transition-colors">
-                                <div className="flex items-center space-x-3">
-                                    <div className="p-2 bg-green-100 rounded-full">
-                                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium text-gray-900">Export Data</h4>
-                                        <p className="text-sm text-gray-500">Download fee structure data</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors">
-                                <div className="flex items-center space-x-3">
-                                    <div className="p-2 bg-purple-100 rounded-full">
-                                        <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4 8V4h16v4M4 8h16M4 8v8a2 2 0 002 2h6" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium text-gray-900">Bulk Operations</h4>
-                                        <p className="text-sm text-gray-500">Manage multiple structures</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

@@ -218,7 +218,7 @@ const FeeReceiptsPage = () => {
                                                 </div>
                                             </div>
                                             <div className="flex items-center space-x-2">
-                                                {payment.status === 'approved' && payment.receiptNumber && (
+                                                {/* {payment.status === 'approved' && payment.receiptNumber && (
                                                     <button
                                                         onClick={() => handleViewReceipt(payment)}
                                                         className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -229,7 +229,7 @@ const FeeReceiptsPage = () => {
                                                         </svg>
                                                         View Receipt
                                                     </button>
-                                                )}
+                                                )} */}
                                                 {payment.status === 'pending' && (
                                                     <span className="inline-flex items-center px-3 py-2 border border-yellow-300 text-sm leading-4 font-medium rounded-md text-yellow-700 bg-yellow-50">
                                                         <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -256,7 +256,7 @@ const FeeReceiptsPage = () => {
                 )}
 
                 {/* Receipt Modal */}
-                {showReceiptModal && selectedPayment && (
+                {/* {showReceiptModal && selectedPayment && (
                     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" onClick={closeReceiptModal}>
                         <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-6xl shadow-lg rounded-md bg-white" onClick={(e) => e.stopPropagation()}>
                             {console.log("receipt ref: ", receiptRef.current)}
@@ -271,7 +271,7 @@ const FeeReceiptsPage = () => {
                             </div>
                         </div>
                     </div>
-                )}
+                )} */}
             </div>
         </div>
     );

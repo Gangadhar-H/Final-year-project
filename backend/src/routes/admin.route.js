@@ -1,5 +1,11 @@
 import { Router } from "express";
-import { addDivision, addSemester, addStudent, addSubject, addTeacher, assignSubjectToTeacher, deleteSemester, deleteStudent, deleteSubject, deleteTeacher, getAllSemesters, getAllStudents, getAllTeachers, getStudentById, getSubjectsBySemester, getTeacherById, loginAdmin, removeDivision, seedAdmin, updateSemester, updateStudent, updateSubject, updateTeacher } from "../controllers/admin.controller.js";
+import {
+    addDivision, addSemester, addStudent, addSubject, addTeacher, assignSubjectToTeacher, deleteSemester, deleteStudent, deleteSubject, deleteTeacher, getAllSemesters, getAllStudents, getAllTeachers, getStudentById, getSubjectsBySemester, getTeacherById, loginAdmin, removeDivision, seedAdmin, updateSemester, updateStudent, updateSubject, updateTeacher, addOfficeStaff,
+    getAllOfficeStaff,
+    getOfficeStaffById,
+    updateOfficeStaff,
+    deleteOfficeStaff
+} from "../controllers/admin.controller.js";
 
 import { verifyAdminJWT } from "../middlewares/adminAuth.js";
 
@@ -36,5 +42,12 @@ router.route("/students").get(getAllStudents);
 router.route("/students/:id").get(getStudentById);
 router.route("/students/:id").put(verifyAdminJWT, updateStudent);
 router.route("/students/:id").delete(verifyAdminJWT, deleteStudent);
+
+// Office Staff routes
+router.route("/office-staff").post(verifyAdminJWT, addOfficeStaff);
+router.route("/office-staff").get(verifyAdminJWT, getAllOfficeStaff);
+router.route("/office-staff/:id").get(verifyAdminJWT, getOfficeStaffById);
+router.route("/office-staff/:id").put(verifyAdminJWT, updateOfficeStaff);
+router.route("/office-staff/:id").delete(verifyAdminJWT, deleteOfficeStaff);
 
 export default router;

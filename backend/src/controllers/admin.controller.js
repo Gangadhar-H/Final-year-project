@@ -6,6 +6,7 @@ import { Semester } from "../models/semester.model.js";
 import { Subject } from "../models/subject.model.js";
 import { Teacher } from "../models/teacher.model.js";
 import { Student } from "../models/student.model.js"
+import { OfficeStaff } from "../models/office.model.js";
 
 
 const seedAdmin = asyncHandler(async (req, res) => {
@@ -391,6 +392,90 @@ const deleteStudent = asyncHandler(async (req, res) => {
     return res.status(200).json({ message: "Student deleted successfully" });
 });
 
+// ------------ Office Staff Management ------------
+const addOfficeStaff = asyncHandler(async (req, res) => {
+    const { staffId, name, email, password, designation, permissions } = req.body;
+
+    if (!staffId || !name || !email || !password || !designation) {
+        return res.status(400).json({ message: "All required fields must be provided" });
+    }
+
+    const existingStaff = await OfficeStaff.findOne({
+        $or: [{ email }, { staffId }]
+    });
+
+    if (existingStaff) {
+        return res.status(400).json({ message: "Staff with this email or staffId already exists" });
+    }
+
+    const officeStaff = new OfficeStaff({
+        staffId,
+        name,
+        email,
+        password,
+        designation,
+        permissions: permissions || {
+            studentManagement: false,
+            feeManagement: false,
+            reportGeneration: false
+        }
+    });
+
+    await officeStaff.save();
+
+    return res.status(201).json({
+        message: "Office staff added successfully",
+        officeStaff: {
+            _id: officeStaff._id,
+            staffId: officeStaff.staffId,
+            name: officeStaff.name,
+            email: officeStaff.email,
+            designation: officeStaff.designation,
+            permissions: officeStaff.permissions
+        }
+    });
+});
+
+const getAllOfficeStaff = asyncHandler(async (req, res) => {
+    const officeStaff = await OfficeStaff.find().select("-password -refreshToken");
+    return res.status(200).json({ message: "All office staff", officeStaff });
+});
+
+const getOfficeStaffById = asyncHandler(async (req, res) => {
+    const officeStaff = await OfficeStaff.findById(req.params.id).select("-password -refreshToken");
+    if (!officeStaff) {
+        return res.status(404).json({ message: "Office staff not found" });
+    }
+    return res.status(200).json({ officeStaff });
+});
+
+const updateOfficeStaff = asyncHandler(async (req, res) => {
+    const { name, email, designation, permissions } = req.body;
+
+    const updatedStaff = await OfficeStaff.findByIdAndUpdate(
+        req.params.id,
+        { name, email, designation, permissions },
+        { new: true }
+    ).select("-password -refreshToken");
+
+    if (!updatedStaff) {
+        return res.status(404).json({ message: "Office staff not found" });
+    }
+
+    return res.status(200).json({
+        message: "Office staff updated successfully",
+        officeStaff: updatedStaff
+    });
+});
+
+const deleteOfficeStaff = asyncHandler(async (req, res) => {
+    const deletedStaff = await OfficeStaff.findByIdAndDelete(req.params.id);
+    if (!deletedStaff) {
+        return res.status(404).json({ message: "Office staff not found" });
+    }
+    return res.status(200).json({ message: "Office staff deleted successfully" });
+});
+
 export {
     seedAdmin,
     loginAdmin,
@@ -414,5 +499,10 @@ export {
     getAllStudents,
     getStudentById,
     updateStudent,
-    deleteStudent
+    deleteStudent,
+    addOfficeStaff,
+    getAllOfficeStaff,
+    getOfficeStaffById,
+    updateOfficeStaff,
+    deleteOfficeStaff
 }
