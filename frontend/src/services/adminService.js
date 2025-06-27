@@ -28,3 +28,19 @@ export const getTeachers = () =>
 
 export const getSubjects = (semesterNumber) =>
     API.get(`/admin/semesters/${semesterNumber}/subjects`).then(res => res.data);
+
+// Office Staff CRUD operations
+export const getAllOfficeStaff = () =>
+    API.get('/admin/office-staff').then(res => res.data);
+
+export const getOfficeStaffById = (id) =>
+    API.get(`/admin/office-staff/${id}`).then(res => res.data);
+
+export const addOfficeStaff = (staffData) =>
+    API.post('/admin/office-staff', staffData).then(res => res.data);
+
+export const updateOfficeStaff = (id, updates) =>
+    API.put(`/admin/office-staff/${id}`, updates).then(res => res.data);
+
+export const deleteOfficeStaff = (id) =>
+    API.delete(`/admin/office-staff/${id}`).then(res => res.data);
